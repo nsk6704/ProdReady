@@ -45,7 +45,7 @@ export default function Home() {
             style={{ animationDelay: `${stagger[4]}ms` }}
           >
             We check 14 common things like README, CI/CD, error handling,
-            tests, and security basics. This isn't a full audit, just a sanity
+            tests, and security basics. This isn&apos;t a full audit, just a sanity
             check before you hit deploy.
           </div>
 
@@ -54,7 +54,7 @@ export default function Home() {
             style={{ animationDelay: `${stagger[5]}ms` }}
           >
             Reports are stored for 24 hours so you can share the link. We
-            don't store any code, only metadata from the scan.
+            don&apos;t store any code, only metadata from the scan.
           </div>
         </div>
       </main>
