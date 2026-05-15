@@ -8,6 +8,7 @@ export interface RepoInfo {
 }
 
 export interface Stack {
+  archetype: Archetype
   framework: string | null
   language: "typescript" | "javascript"
   bundler: string | null
@@ -39,9 +40,17 @@ export interface ScanContext {
   stack: Stack
 }
 
+export type Archetype =
+  | "web-app"
+  | "api-server"
+  | "fullstack"
+  | "library"
+  | "cli-tool"
+
 export interface ScanRule {
   id: string
   category: "critical" | "recommended" | "nice-to-have"
+  archetypes?: Archetype[]
   check(ctx: ScanContext): Promise<Finding | null>
 }
 

@@ -3,6 +3,7 @@ import type { ScanRule } from "../types"
 export const rule: ScanRule = {
   id: "has-error-boundaries",
   category: "critical",
+  archetypes: ["web-app", "fullstack"],
   check: async (ctx) => {
     const hasReact =
       ctx.stack.framework === "Next.js" ||

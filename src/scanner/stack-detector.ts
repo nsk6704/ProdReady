@@ -1,4 +1,4 @@
-import type { Stack, ScanContext } from "./types"
+import type { Archetype, Stack, ScanContext } from "./types"
 
 const frameworks: Record<string, string> = {
   next: "Next.js",
@@ -136,6 +136,33 @@ function matchDeps(
   return [...new Set(found)]
 }
 
+const webAppFrameworks = new Set([
+  "Next.js", "React (CRA)", "Vite", "Astro", "Remix", "Gatsby",
+  "Nuxt", "SvelteKit", "SolidJS",
+])
+
+const apiServerFrameworks = new Set([
+  "Express", "Fastify", "Hono", "NestJS",
+])
+
+export function detectArchetype(
+  framework: string | null,
+  pkg: Record<string, unknown> | null,
+): Archetype {
+  const isWebApp = framework !== null && webAppFrameworks.has(framework)
+  const isApiServer = framework !== null && apiServerFrameworks.has(framework)
+
+  if (isWebApp && isApiServer) return "fullstack"
+  if (isWebApp && !isApiServer) return "web-app"
+  if (isApiServer && !isWebApp) return "api-server"
+
+  const pkgJson = pkg as Record<string, unknown> | undefined
+  if (pkgJson?.bin) return "cli-tool"
+  if (pkgJson?.["main"] || pkgJson?.["exports"]) return "library"
+
+  return "web-app"
+}
+
 export function detectStack(ctx: ScanContext): Stack {
   const pkg = ctx.packageJson
   const allDeps = {
@@ -149,7 +176,7 @@ export function detectStack(ctx: ScanContext): Stack {
     "typescript" in allDeps ||
     ctx.files.some((f) => f.endsWith(".ts") || f.endsWith(".tsx"))
 
-  return {
+  const stackBase: Omit<Stack, "archetype"> = {
     framework: detectedFramework[0] || null,
     language: hasTypeScript ? "typescript" : "javascript",
     bundler: detectedBundlers[0] || null,
@@ -161,5 +188,10 @@ export function detectStack(ctx: ScanContext): Stack {
     monitoring: matchDeps(allDeps, monitoring),
     logging: matchDeps(allDeps, logging),
     httpClient: matchDeps(allDeps, httpClients),
+  }
+
+  return {
+    ...stackBase,
+    archetype: detectArchetype(stackBase.framework, pkg),
   }
 }

@@ -3,6 +3,7 @@ import type { ScanRule } from "../types"
 export const rule: ScanRule = {
   id: "has-monitoring",
   category: "nice-to-have",
+  archetypes: ["web-app", "api-server", "fullstack"],
   check: async (ctx) => {
     if (ctx.stack.monitoring.length > 0) return null
 

@@ -3,6 +3,7 @@ import type { ScanRule } from "../types"
 export const rule: ScanRule = {
   id: "has-rate-limiting",
   category: "recommended",
+  archetypes: ["api-server", "fullstack"],
   check: async (ctx) => {
     const deps = ctx.packageJson
     if (!deps) return null

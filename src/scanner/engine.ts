@@ -1,4 +1,4 @@
-import type { Finding, ScanContext, ScanResult, ScanRule } from "./types"
+import type { Archetype, Finding, ScanContext, ScanResult, ScanRule } from "./types"
 import { detectStack } from "./stack-detector"
 import { rule as hasEnvExample } from "./rules/has-env-example"
 import { rule as hasDockerfile } from "./rules/has-dockerfile"
@@ -32,10 +32,17 @@ const rules: ScanRule[] = [
   hasCors,
 ]
 
+function isRuleApplicable(rule: ScanRule, archetype: Archetype): boolean {
+  if (!rule.archetypes || rule.archetypes.length === 0) return true
+  return rule.archetypes.includes(archetype)
+}
+
 export async function runScanner(ctx: ScanContext): Promise<ScanResult> {
   ctx.stack = detectStack(ctx)
+  const archetype = ctx.stack.archetype
 
-  const results = await Promise.all(rules.map((rule) => rule.check(ctx)))
+  const applicableRules = rules.filter((r) => isRuleApplicable(r, archetype))
+  const results = await Promise.all(applicableRules.map((rule) => rule.check(ctx)))
   const findings: Finding[] = results.filter((f): f is Finding => f !== null)
 
   let score = 100
@@ -48,6 +55,8 @@ export async function runScanner(ctx: ScanContext): Promise<ScanResult> {
   const findingIds = new Set(findings.map((f) => f.ruleId))
 
   const checkBadge = (ruleId: string, presentLabel: string) => {
+    const rule = rules.find((r) => r.id === ruleId)
+    if (!rule || !isRuleApplicable(rule, archetype)) return
     if (!findingIds.has(ruleId)) positiveBadges.push(presentLabel)
   }
 

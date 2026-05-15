@@ -3,6 +3,7 @@ import type { ScanRule } from "../types"
 export const rule: ScanRule = {
   id: "has-dockerfile",
   category: "recommended",
+  archetypes: ["web-app", "api-server", "fullstack"],
   check: async (ctx) => {
     const hasDockerfile = ctx.files.some(
       (f) => f === "Dockerfile" || f === "docker-compose.yml" || f === "docker-compose.yaml",
