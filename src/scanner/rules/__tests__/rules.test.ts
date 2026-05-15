@@ -162,44 +162,54 @@ describe("has-rate-limiting", () => {
     const { rule } = await import("../has-rate-limiting")
     expect(await rule.check(ctx({
       packageJson: { dependencies: { "express-rate-limit": "^7.0.0" } },
-      stack: { ...ctx().stack, archetype: "api-server", framework: "Express" },
+      stack: { ...ctx().stack, archetype: "api-server" },
     }))).toBeNull()
   })
 
-  it("fails for Express without rate limiting", async () => {
+  it("passes when ignored packages in deps", async () => {
+    const { rule } = await import("../has-rate-limiting")
+    expect(await rule.check(ctx({
+      packageJson: { dependencies: { "upstash-rate-limiter": "^1.0.0" } },
+      stack: { ...ctx().stack, archetype: "api-server" },
+    }))).toBeNull()
+  })
+
+  it("passes when rate limit file exists", async () => {
+    const { rule } = await import("../has-rate-limiting")
+    expect(await rule.check(ctx({
+      files: ["api/rate_limiter.py"],
+      stack: { ...ctx().stack, archetype: "api-server" },
+    }))).toBeNull()
+  })
+
+  it("passes with Dockerfile has rate limiting file", async () => {
+    const { rule } = await import("../has-rate-limiting")
+    expect(await rule.check(ctx({
+      files: ["app/throttle.go"],
+      stack: { ...ctx().stack, archetype: "api-server" },
+    }))).toBeNull()
+  })
+
+  it("fails without rate limiting", async () => {
     const { rule } = await import("../has-rate-limiting")
     const r = await rule.check(ctx({
       packageJson: { dependencies: { express: "^4.0.0" } },
-      stack: { ...ctx().stack, archetype: "api-server", framework: "Express" },
+      stack: { ...ctx().stack, archetype: "api-server" },
     }))
     expect(r).not.toBeNull()
     expect(r!.ruleId).toBe("has-rate-limiting")
+    expect(r!.severity).toBe("recommended")
+    expect(r!.scoreImpact).toBe(-8)
   })
 
-  it("fails for Next.js without rate limiting", async () => {
+  it("fails without package.json", async () => {
     const { rule } = await import("../has-rate-limiting")
     const r = await rule.check(ctx({
-      packageJson: { dependencies: { next: "^14.0.0" } },
-      stack: { ...ctx().stack, archetype: "fullstack", framework: "Next.js" },
+      packageJson: null,
+      stack: { ...ctx().stack, archetype: "fullstack" },
     }))
     expect(r).not.toBeNull()
     expect(r!.ruleId).toBe("has-rate-limiting")
-  })
-
-  it("is no-op for unknown framework", async () => {
-    const { rule } = await import("../has-rate-limiting")
-    expect(await rule.check(ctx({
-      packageJson: {},
-      stack: { ...ctx().stack, archetype: "web-app", framework: "Astro" },
-    }))).toBeNull()
-  })
-
-  it("is no-op without package.json", async () => {
-    const { rule } = await import("../has-rate-limiting")
-    expect(await rule.check(ctx({
-      packageJson: null,
-      stack: { ...ctx().stack, archetype: "api-server", framework: "Express" },
-    }))).toBeNull()
   })
 })
 
