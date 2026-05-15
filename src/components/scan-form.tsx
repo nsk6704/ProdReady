@@ -68,7 +68,9 @@ export default function ScanForm() {
         </Button>
       </div>
 
-      {error && <p className="text-destructive text-sm">{error}</p>}
+      {error && (
+        <p className="animate-fade-in-up text-destructive text-sm">{error}</p>
+      )}
     </form>
   )
 }
