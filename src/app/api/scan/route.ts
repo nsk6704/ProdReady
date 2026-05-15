@@ -26,21 +26,22 @@ export async function POST(request: NextRequest) {
 
     const { repoUrl, githubToken } = parsed.data
 
-    const repoData = await fetchRepoInfo(repoUrl, githubToken)
-    if (!repoData) {
-      return NextResponse.json(
-        { error: "Could not fetch repository. Check the URL or provide a GitHub token." },
-        { status: 400 },
-      )
+    const repoResult = await fetchRepoInfo(repoUrl, githubToken)
+    if (!repoResult.success) {
+      const status = repoResult.error.code === "RATE_LIMITED" ? 429
+        : repoResult.error.code === "NOT_FOUND" ? 404
+        : repoResult.error.code === "FORBIDDEN" ? 403
+        : 400
+      return NextResponse.json({ error: repoResult.error.message }, { status })
     }
 
-    const packageJson = repoData.fileContents.get("package.json")
+    const packageJson = repoResult.fileContents.get("package.json")
     const parsedPackage = packageJson ? JSON.parse(packageJson) : null
 
     const scanContext = {
-      repoInfo: repoData.repoInfo,
-      files: repoData.files,
-      fileContents: repoData.fileContents,
+      repoInfo: repoResult.repoInfo,
+      files: repoResult.files,
+      fileContents: repoResult.fileContents,
       packageJson: parsedPackage,
       stack: null as never,
     }
@@ -50,9 +51,9 @@ export async function POST(request: NextRequest) {
     const scan = await prisma.scan.create({
       data: {
         repoUrl,
-        owner: repoData.repoInfo.owner,
-        name: repoData.repoInfo.name,
-        branch: repoData.repoInfo.branch,
+        owner: repoResult.repoInfo.owner,
+        name: repoResult.repoInfo.name,
+        branch: repoResult.repoInfo.branch,
         score: result.score,
         stack: JSON.parse(JSON.stringify(result.stack)),
         findings: JSON.parse(JSON.stringify(result.findings)),
