@@ -26,7 +26,16 @@ export async function POST(request: NextRequest) {
 
     const { repoUrl, githubToken } = parsed.data
 
-    const repoResult = await fetchRepoInfo(repoUrl, githubToken)
+    const existing = await prisma.scan.findFirst({
+      where: { repoUrl, createdAt: { gte: new Date(Date.now() - 3600000) } },
+      orderBy: { createdAt: "desc" },
+    })
+    if (existing) {
+      return NextResponse.json({ id: existing.id, cached: true })
+    }
+
+    const effectiveToken = githubToken || process.env.GITHUB_TOKEN
+    const repoResult = await fetchRepoInfo(repoUrl, effectiveToken)
     if (!repoResult.success) {
       const status = repoResult.error.code === "RATE_LIMITED" ? 429
         : repoResult.error.code === "NOT_FOUND" ? 404

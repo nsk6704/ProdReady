@@ -120,7 +120,7 @@ export async function fetchRepoInfo(
   const branch = repo.default_branch
   const fileContents = new Map<string, string>()
 
-  const files = await fetchFileList(owner, name, "", token)
+  const files = await fetchFileList(owner, name, branch, token)
 
   const priorityFiles = [
     "package.json",
@@ -164,8 +164,39 @@ export async function fetchRepoInfo(
 async function fetchFileList(
   owner: string,
   name: string,
-  path: string,
+  branch: string,
   token?: string,
+): Promise<string[]> {
+  const { data } = await apiFetch<{
+    tree: { path: string; type: "blob" | "tree" }[]
+    truncated: boolean
+  }>(`/repos/${owner}/${name}/git/trees/${branch}?recursive=1`, token)
+
+  if (!data) return []
+
+  if (data.truncated) {
+    return fetchFileListRecursive(owner, name, token)
+  }
+
+  const excluded = new Set([
+    "node_modules", ".git", ".next", "dist",
+    "build", ".cache", "coverage", ".vercel",
+  ])
+
+  return data.tree
+    .filter((item) => {
+      if (item.type !== "blob") return false
+      const parts = item.path.split("/")
+      return !parts.some((p) => excluded.has(p))
+    })
+    .map((item) => item.path)
+}
+
+async function fetchFileListRecursive(
+  owner: string,
+  name: string,
+  token?: string,
+  path = "",
 ): Promise<string[]> {
   const { data: items } = await apiFetch<
     { path: string; type: string }[]
@@ -175,30 +206,21 @@ async function fetchFileList(
 
   const files: string[] = []
 
+  const excluded = new Set([
+    "node_modules", ".git", ".next", "dist",
+    "build", ".cache", "coverage", ".vercel",
+  ])
+
   for (const item of items) {
     if (item.type === "file") {
       files.push(item.path)
-    } else if (item.type === "dir" && shouldIncludeDir(item.path)) {
-      const subFiles = await fetchFileList(owner, name, item.path, token)
+    } else if (item.type === "dir" && !excluded.has(item.path)) {
+      const subFiles = await fetchFileListRecursive(owner, name, token, item.path)
       files.push(...subFiles)
     }
   }
 
   return files
-}
-
-function shouldIncludeDir(path: string): boolean {
-  const excluded = new Set([
-    "node_modules",
-    ".git",
-    ".next",
-    "dist",
-    "build",
-    ".cache",
-    "coverage",
-    ".vercel",
-  ])
-  return !excluded.has(path)
 }
 
 async function fetchFileContent(
