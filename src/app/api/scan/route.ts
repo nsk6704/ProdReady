@@ -1,18 +1,30 @@
 import { NextRequest, NextResponse } from "next/server"
+import { z } from "zod"
 import { fetchRepoInfo } from "@/scanner/github"
 import { runScanner } from "@/scanner/engine"
 import { prisma } from "@/lib/prisma"
 
+const scanBody = z.object({
+  repoUrl: z.string().url("Must be a valid URL").regex(
+    /github\.com\/.+\/.+/,
+    "Must be a GitHub repository URL",
+  ),
+  githubToken: z.string().optional(),
+})
+
 export async function POST(request: NextRequest) {
   try {
-    const { repoUrl, githubToken } = await request.json()
+    const body = await request.json()
+    const parsed = scanBody.safeParse(body)
 
-    if (!repoUrl || typeof repoUrl !== "string") {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "repoUrl is required" },
+        { error: parsed.error.issues[0].message },
         { status: 400 },
       )
     }
+
+    const { repoUrl, githubToken } = parsed.data
 
     const repoData = await fetchRepoInfo(repoUrl, githubToken)
     if (!repoData) {
