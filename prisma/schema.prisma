@@ -1,0 +1,21 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Scan {
+  id        String   @id @default(cuid())
+  repoUrl   String
+  owner     String
+  name      String
+  branch    String
+  score     Int
+  stack     Json
+  findings  Json
+  badges    String[]
+  createdAt DateTime @default(now())
+}
