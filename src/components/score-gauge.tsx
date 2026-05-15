@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 
 interface ScoreGaugeProps {
   score: number
@@ -9,15 +9,26 @@ interface ScoreGaugeProps {
 export default function ScoreGauge({ score }: ScoreGaugeProps) {
   const [displayed, setDisplayed] = useState(0)
   const [ready, setReady] = useState(false)
+  const [pulse, setPulse] = useState(false)
+  const prevScore = useRef(0)
 
   useEffect(() => {
-    const duration = 800
-    const steps = 30
-    const increment = score / steps
-    let current = 0
+    const from = prevScore.current
+    prevScore.current = score
+    const diff = score - from
+
+    if (diff > 0) {
+      setPulse(true)
+      setTimeout(() => setPulse(false), 600)
+    }
+
+    const duration = 500
+    const steps = 20
+    const increment = diff / steps
+    let current = from
     const interval = setInterval(() => {
       current += increment
-      if (current >= score) {
+      if ((diff > 0 && current >= score) || (diff < 0 && current <= score)) {
         setDisplayed(score)
         clearInterval(interval)
         return
@@ -79,14 +90,14 @@ export default function ScoreGauge({ score }: ScoreGaugeProps) {
             strokeDasharray={circumference}
             strokeDashoffset={offset}
             style={{
-              transition: "stroke-dashoffset 0.9s ease-out",
+              transition: "stroke-dashoffset 0.6s ease-out",
             }}
           />
         </svg>
         <span
-          className={`absolute text-4xl font-bold tabular-nums ${textColor}`}
+          className={`absolute text-4xl font-bold tabular-nums ${textColor} ${pulse ? "scale-125" : ""}`}
           style={{
-            animation: ready ? "count-up 0.3s ease-out" : "none",
+            transition: "transform 0.3s ease-out",
           }}
         >
           {displayed}
