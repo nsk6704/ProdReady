@@ -1,7 +1,7 @@
 # ProdReady — Agent Memory
 
 ## Project Overview
-Build a web app called "ProdReady" that analyzes a GitHub repository and generates a "production readiness" report. The scan checks common JavaScript/TypeScript web apps (Next.js, Express, React, Vite, Node.js) for deployment readiness issues.
+Build a web app called "ProdReady" that analyzes a GitHub repository and generates a "production readiness" report. The scan checks common web apps (Next.js, Express, React, Vite, Node.js, Django, Flask), in fact any generic tech stack for deployment readiness issues.
 
 ## Tech Stack
 - **Framework:** Next.js 16 (App Router) with TypeScript (strict mode)
