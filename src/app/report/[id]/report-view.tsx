@@ -11,6 +11,24 @@ import StaggerIn from "@/components/stagger-in"
 import { Separator } from "@/components/ui/separator"
 import { buttonVariants } from "@/components/ui/button"
 import { ArrowLeft, GitBranch, Calendar } from "lucide-react"
+import type { Archetype } from "@/scanner/types"
+
+const CHECKS: { id: string; label: string; archetypes?: Archetype[] }[] = [
+  { id: "has-env-example", label: ".env.example file" },
+  { id: "has-readme", label: "README with documentation" },
+  { id: "has-cicd", label: "CI/CD pipeline" },
+  { id: "has-tests", label: "Test setup" },
+  { id: "has-validation", label: "Input validation" },
+  { id: "has-strict-ts", label: "TypeScript strict mode" },
+  { id: "has-retry-handling", label: "HTTP retry & timeout handling" },
+  { id: "has-dockerfile", archetypes: ["web-app", "api-server", "fullstack"], label: "Dockerfile" },
+  { id: "has-error-handling", archetypes: ["api-server", "fullstack"], label: "Global error handler" },
+  { id: "has-error-boundaries", archetypes: ["web-app", "fullstack"], label: "React error boundaries" },
+  { id: "has-rate-limiting", archetypes: ["api-server", "fullstack"], label: "Rate limiting" },
+  { id: "has-logging", archetypes: ["api-server", "fullstack"], label: "Structured logging" },
+  { id: "has-cors", archetypes: ["api-server", "fullstack"], label: "CORS configuration" },
+  { id: "has-monitoring", archetypes: ["web-app", "api-server", "fullstack"], label: "Monitoring & observability" },
+]
 
 interface ReportViewProps {
   id: string
@@ -35,6 +53,8 @@ export default function ReportView({
   badges,
   createdAt,
 }: ReportViewProps) {
+  const findingMap = new Set(findings.map((f) => f.ruleId))
+
   const critical = findings.filter((f) => f.severity === "critical")
   const recommended = findings.filter((f) => f.severity === "recommended")
   const niceToHave = findings.filter((f) => f.severity === "nice-to-have")
@@ -93,6 +113,45 @@ export default function ReportView({
           })}
         </div>
       </div>
+
+      <Separator className="mb-8" />
+
+      <section className="mb-8">
+        <h2 className="mb-4 text-lg font-semibold">What We Checked</h2>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          {CHECKS.map((check) => {
+            const isApplicable =
+              !check.archetypes ||
+              check.archetypes.includes(stack.archetype)
+            const isFinding = findingMap.has(check.id)
+            let icon: string
+            let statusClass: string
+            if (!isApplicable) {
+              icon = "—"
+              statusClass = "text-muted-foreground"
+            } else if (isFinding) {
+              icon = "✗"
+              statusClass = "text-red-500"
+            } else {
+              icon = "✓"
+              statusClass = "text-green-500"
+            }
+            return (
+              <div key={check.id} className="flex items-center gap-2 text-sm">
+                <span className={`w-4 font-bold ${statusClass}`}>{icon}</span>
+                <span className={!isApplicable ? "text-muted-foreground" : ""}>
+                  {check.label}
+                </span>
+                {!isApplicable && (
+                  <span className="text-muted-foreground ml-auto text-xs">
+                    N/A
+                  </span>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </section>
 
       <Separator className="mb-8" />
 

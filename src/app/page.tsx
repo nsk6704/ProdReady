@@ -28,7 +28,7 @@ export default function Home() {
           <ScanForm />
 
           <div className="text-muted-foreground mt-6 max-w-md text-xs leading-relaxed">
-            We check ~15 common things like README, CI/CD, error handling,
+            We check 14 common things like README, CI/CD, error handling,
             tests, and security basics. Not a full audit — just a sanity check
             before you hit deploy.
           </div>
