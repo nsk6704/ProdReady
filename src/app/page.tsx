@@ -29,13 +29,13 @@ export default function Home() {
 
           <div className="text-muted-foreground mt-6 max-w-md text-xs leading-relaxed">
             We check 14 common things like README, CI/CD, error handling,
-            tests, and security basics. Not a full audit - just a sanity check
-            before you hit deploy.
+            tests, and security basics. This isn't a full audit, just a sanity
+            check before you hit deploy.
           </div>
 
           <div className="text-muted-foreground/60 mt-3 max-w-md text-xs leading-relaxed">
-            Reports are stored for 24 hours so you can share the link. No code
-            is ever stored - only metadata from the scan.
+            Reports are stored for 24 hours so you can share the link. We
+            don't store any code, only metadata from the scan.
           </div>
         </div>
       </main>
