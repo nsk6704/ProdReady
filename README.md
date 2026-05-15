@@ -1,51 +1,17 @@
 # ProdReady
 
-A production readiness checker for side projects. Paste any public GitHub repo and get a health report across 14 checks — README, CI/CD, Docker, error handling, tests, security basics, and more.
+A production readiness checker for side projects. Paste any public GitHub repo and get a health report across 14 checks.
 
 ## How It Works
 
 1. Enter a GitHub repo URL
-2. ProdReady clones metadata and scans files via the GitHub API
+2. Files and metadata are scanned via the GitHub API (we don't clone, build, or run your code)
 3. Each rule runs in parallel and returns a finding or passes
-4. A score (0–100) is calculated with critical (-15), recommended (-8), and nice-to-have (-3) impacts
-5. You can dismiss findings with context-aware options that partially restore score
-6. Share the report link — stored for 24 hours, no code saved
+4. Score starts at 100, critical findings -15, recommended -8, nice-to-have -3, floor at 0
+5. Dismiss findings with context-aware options that partially restore score
+6. Share the report link — stored for 24 hours, metadata only, no code saved
 
-## Features
-
-- **14 scanner rules** covering deployment readiness, security, and best practices
-- **Score gauge** with animated SVG ring and count-up number
-- **Dismiss options** — tell us why something isn't relevant and the score adjusts
-- **Score celebration** — framer-motion particle burst and spring animation on improvement
-- **Staggered entrances** — landing page and checklist items fade in with cascade timing
-- **Interactive report** — rescan, share, dismiss, badges update in real time
-- **Caching** — same repo scanned within an hour returns cached result (with rescan option)
-- **Privacy** — reports stored 24h, metadata only, no code saved
-- **Dark mode** via next-themes
-- **Universal** — works with any tech stack (rules gracefully skip when not applicable)
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 16 (App Router) |
-| Language | TypeScript (strict) |
-| Styling | TailwindCSS v4 + shadcn/ui |
-| Animations | framer-motion + CSS keyframes |
-| Database | PostgreSQL via Prisma ORM |
-| Font | Space Grotesk via next/font |
-| Icons | lucide-react |
-| Validation | zod |
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 20+
-- PostgreSQL database (or Neon free tier)
-- GitHub personal access token (with `public_repo` scope) — optional but recommended to avoid rate limits
-
-### Setup
+## Setup
 
 ```bash
 git clone <repo>
@@ -55,25 +21,12 @@ npx prisma db push
 npm run dev
 ```
 
-### Environment Variables
-
 Create `.env.local`:
 
 ```env
 DATABASE_URL=postgresql://...
-GITHUB_TOKEN=ghp_...   # optional
+GITHUB_TOKEN=ghp_...   # optional, avoids rate limits
 ```
-
-### Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start dev server with Turbopack |
-| `npm run build` | Production build |
-| `npm run lint` | ESLint |
-| `npm run db:push` | Push Prisma schema to DB |
-| `npm run db:studio` | Open Prisma Studio |
-| `npm run db:generate` | Generate Prisma client |
 
 ## Scanner Rules
 
@@ -82,48 +35,35 @@ GITHUB_TOKEN=ghp_...   # optional
 | has-env-example | universal | nice-to-have | `.env.example` or `.env.sample` exists |
 | has-readme | universal | recommended | README with content (50+ chars) |
 | has-cicd | universal | recommended | CI/CD config (GitHub Actions, CircleCI, GitLab CI, Jenkins) |
-| has-tests | universal | recommended | Test files, test directory, or test framework in deps |
+| has-tests | universal | recommended | Test files or test framework in deps |
 | has-validation | universal | recommended | Input validation library in stack |
 | has-dockerfile | universal | recommended | Dockerfile or docker-compose |
 | has-strict-ts | typescript | recommended | `strict: true` in tsconfig.json |
 | has-retry-handling | universal | critical | HTTP calls without retry/timeout patterns |
 | has-error-handling | api-server/fullstack | critical | Express error middleware or Next.js error.tsx |
 | has-error-boundaries | web-app/fullstack | critical | React error boundaries or error.tsx |
-| has-rate-limiting | api-server/fullstack | recommended | Rate limiting in Express or Next.js API routes |
+| has-rate-limiting | api-server/fullstack | recommended | Rate limiting packages or related filenames |
 | has-logging | api-server/fullstack | recommended | Structured logging library |
 | has-cors | api-server/fullstack | recommended | CORS middleware in Express |
 | has-monitoring | web-app/api-server/fullstack | nice-to-have | Monitoring/observability setup |
 
 ## Scope & Limitations
 
-Each check runs against your repo's visible files and metadata via the GitHub API. We don't clone, build, or run your code. Here's what that means:
+Each check runs against repo metadata and file listings via the GitHub API. We don't build or run your code.
 
-- **has-env-example** — checks file exists, not whether it's kept up to date with actual env vars
+- **has-env-example** — checks file exists, not whether it's kept in sync
 - **has-readme** — checks file length, not quality
-- **has-tests** — looks for a test framework in dependencies or test files/folders; doesn't confirm tests actually run or pass
-- **has-validation** — detects validation libraries in package.json only (not source-level usage or custom validation)
-- **has-strict-ts** — reads tsconfig.json; doesn't check for actual strict-mode violations
-- **has-retry-handling** — scans up to 20 source files for HTTP calls and looks for retry/timeout patterns; may miss complex setups
-- **has-error-handling** — checks for Express error middleware or Next.js error.tsx; doesn't confirm it covers all routes
-- **has-error-boundaries** — looks for ErrorBoundary components or error.tsx; doesn't verify they're wired correctly
-- **has-rate-limiting** — detects rate limit packages in dependencies or rate-limit-related filenames; doesn't inspect middleware config
+- **has-tests** — looks for a test framework in deps or test files; doesn't confirm tests run
+- **has-validation** — detects validation libraries in package.json; not source-level usage
+- **has-strict-ts** — reads tsconfig.json; doesn't check for strict-mode violations
+- **has-retry-handling** — scans up to 20 source files for HTTP calls; may miss complex setups
+- **has-error-handling** — checks for Express error middleware or Next.js error.tsx; doesn't confirm route coverage
+- **has-error-boundaries** — looks for ErrorBoundary components; doesn't verify wiring
+- **has-rate-limiting** — detects rate limit packages or rate-limit-related filenames; doesn't inspect middleware config
 - **has-logging / has-monitoring / has-cors** — checks dependency lists; doesn't confirm actual usage
-- Rules that don't apply to your stack are silently skipped (e.g. CORS for a static site)
+- Rules that don't apply to your stack are silently skipped
 
-Every check also shows this explanation via an info tooltip on the report page so you know exactly what was inspected.
-
-## Future Scope
-
-Planned improvements and rule candidates:
-
-- **Source-level validation** — deeper AST scanning for error handling coverage, auth middleware, and security headers
-- **Deeper caching strategy** — analyze lockfiles and dependency trees for known vulnerabilities
-- **Multi-file scans** — check that patterns like database migrations, health check endpoints, and graceful shutdowns are present
-- **Framework expansions** — add rules for Django (SECRET_KEY, DEBUG), Flask, FastAPI, Rails, Phoenix, Go stdlib projects
-- **CI/CD evaluation** — verify pipeline actually runs lint, typecheck, and tests rather than just existing
-- **License & contribution files** — detect CODEOWNERS, CONTRIBUTING.md, SECURITY.md
-- **Bundle analysis** — rough estimate of JS bundle size from import graphs (for web-app archetype)
-- **Accessibility checks** — detect aria labels, semantic HTML usage for frontend projects
+All 14 items on the report page have info tooltips explaining exactly what was inspected.
 
 ## API
 
@@ -133,43 +73,8 @@ Planned improvements and rule candidates:
 { "repoUrl": "https://github.com/owner/repo", "force": false }
 ```
 
-Returns `{ id: string, cached?: boolean }`.
-
-- Cached results within 1 hour are returned automatically
-- Set `force: true` to bypass cache
+Returns `{ id: string, cached?: boolean }`. Cached results within 1 hour returned automatically. Set `force: true` to bypass.
 
 ### `GET /api/report/[id]`
 
 Returns full report JSON from the database.
-
-## Architecture
-
-```
-src/
-  app/           — App Router pages + API routes
-  components/    — React components (ui/ for shadcn, app components)
-  scanner/       — Scan engine
-    rules/       — One file per rule, each exporting { id, category, check() }
-    engine.ts    — Orchestrator: runs all rules in parallel
-    github.ts    — GitHub REST API client
-    stack-detector.ts — Detect framework, language, and ecosystem from package.json
-    types.ts     — Shared scanner types
-  lib/           — Prisma client, cn() utility
-```
-
-### Score Calculation
-
-- Starts at 100
-- Critical finding: -15
-- Recommended finding: -8
-- Nice-to-have finding: -3
-- Floor at 0
-- Dismissing with an option partially restores based on the option's score impact
-
-## Deployment
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
-
-Requires `DATABASE_URL` environment variable pointing to a PostgreSQL database.
-
-
