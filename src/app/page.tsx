@@ -1,5 +1,7 @@
 import ScanForm from "@/components/scan-form"
 
+const stagger = [0, 100, 200, 300, 450, 550]
+
 export default function Home() {
   return (
     <div className="flex flex-1 flex-col">
@@ -11,29 +13,46 @@ export default function Home() {
 
       <main className="flex flex-1 flex-col items-center justify-center px-4 py-20">
         <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
-          <div className="bg-amber-50 text-amber-700 mb-6 rounded-full px-4 py-1.5 text-sm font-medium">
+          <div
+            className="animate-fade-in-up bg-amber-50 text-amber-700 mb-6 rounded-full px-4 py-1.5 text-sm font-medium"
+            style={{ animationDelay: `${stagger[0]}ms` }}
+          >
             A production readiness check for side projects
           </div>
 
-          <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1
+            className="animate-fade-in-up mb-4 text-4xl font-bold tracking-tight sm:text-5xl"
+            style={{ animationDelay: `${stagger[1]}ms` }}
+          >
             Is Your Repo{" "}
             <span className="text-amber-500">ProdReady</span>?
           </h1>
 
-          <p className="text-muted-foreground mb-6 max-w-lg text-lg leading-relaxed">
+          <p
+            className="animate-fade-in-up text-muted-foreground mb-6 max-w-lg text-lg leading-relaxed"
+            style={{ animationDelay: `${stagger[2]}ms` }}
+          >
             Paste any public GitHub repo and get a quick health check for your
             side project. Practical pointers to ship with confidence.
           </p>
 
-          <ScanForm />
+          <div style={{ animationDelay: `${stagger[3]}ms` }} className="animate-fade-in-up w-full max-w-lg">
+            <ScanForm />
+          </div>
 
-          <div className="text-muted-foreground mt-6 max-w-md text-xs leading-relaxed">
+          <div
+            className="animate-fade-in-up text-muted-foreground mt-6 max-w-md text-xs leading-relaxed"
+            style={{ animationDelay: `${stagger[4]}ms` }}
+          >
             We check 14 common things like README, CI/CD, error handling,
             tests, and security basics. This isn't a full audit, just a sanity
             check before you hit deploy.
           </div>
 
-          <div className="text-muted-foreground/60 mt-3 max-w-md text-xs leading-relaxed">
+          <div
+            className="animate-fade-in-up text-muted-foreground/60 mt-3 max-w-md text-xs leading-relaxed"
+            style={{ animationDelay: `${stagger[5]}ms` }}
+          >
             Reports are stored for 24 hours so you can share the link. We
             don't store any code, only metadata from the scan.
           </div>
