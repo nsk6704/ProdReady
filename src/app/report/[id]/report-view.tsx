@@ -11,6 +11,7 @@ import StaggerIn from "@/components/stagger-in"
 import ScoreCelebration from "@/components/score-celebration"
 import { Separator } from "@/components/ui/separator"
 import { buttonVariants } from "@/components/ui/button"
+import ThemeToggle from "@/components/theme-toggle"
 import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, GitBranch, Calendar, Check, X, Minus, ArrowUp, RefreshCw, Loader2, HelpCircle } from "lucide-react"
@@ -123,6 +124,7 @@ export default function ReportView({
 
         <div className="flex items-center gap-2">
           <ShareButton reportId={id} />
+          <ThemeToggle />
         </div>
       </header>
 

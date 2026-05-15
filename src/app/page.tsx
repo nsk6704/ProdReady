@@ -1,4 +1,5 @@
 import ScanForm from "@/components/scan-form"
+import ThemeToggle from "@/components/theme-toggle"
 
 const stagger = [0, 100, 200, 300, 450, 550]
 
@@ -9,6 +10,7 @@ export default function Home() {
         <div className="flex items-center gap-2">
           <span className="text-amber-500 text-xl font-bold">ProdReady</span>
         </div>
+        <ThemeToggle />
       </header>
 
       <main className="flex flex-1 flex-col items-center justify-center px-4 py-20">
