@@ -56,7 +56,7 @@ export const rule: ScanRule = {
         severity: "critical",
         scoreImpact: -15,
         suggestion:
-          "Add at least one Error Boundary wrapping your app (or use Next.js `error.tsx`). Show a friendly fallback instead of a blank page.",
+          `Add at least one Error Boundary wrapping your app${ctx.stack.framework === "Next.js" ? " (or use error.tsx)" : ""}. Show a friendly fallback instead of a blank page.`,
         badge: "No Error Boundaries",
       }
     }

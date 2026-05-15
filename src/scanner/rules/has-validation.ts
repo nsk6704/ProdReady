@@ -14,7 +14,7 @@ export const rule: ScanRule = {
       severity: "recommended",
       scoreImpact: -8,
       suggestion:
-        "Install `zod` (lightweight and popular) to validate request bodies, env vars, and API responses at runtime.",
+        "Add a validation library to validate input at the boundary. Schema validation catches bad data before it reaches your logic.",
       badge: "No Validation Library",
     }
   },
