@@ -1,36 +1,144 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ProdReady
+
+A production readiness checker for side projects. Paste any public GitHub repo and get a health report across 14 checks — README, CI/CD, Docker, error handling, tests, security basics, and more.
+
+## How It Works
+
+1. Enter a GitHub repo URL
+2. ProdReady clones metadata and scans files via the GitHub API
+3. Each rule runs in parallel and returns a finding or passes
+4. A score (0–100) is calculated with critical (-15), recommended (-8), and nice-to-have (-3) impacts
+5. You can dismiss findings with context-aware options that partially restore score
+6. Share the report link — stored for 24 hours, no code saved
+
+## Features
+
+- **14 scanner rules** covering deployment readiness, security, and best practices
+- **Score gauge** with animated SVG ring and count-up number
+- **Dismiss options** — tell us why something isn't relevant and the score adjusts
+- **Score celebration** — framer-motion particle burst and spring animation on improvement
+- **Staggered entrances** — landing page and checklist items fade in with cascade timing
+- **Interactive report** — rescan, share, dismiss, badges update in real time
+- **Caching** — same repo scanned within an hour returns cached result (with rescan option)
+- **Privacy** — reports stored 24h, metadata only, no code saved
+- **Dark mode** via next-themes
+- **Universal** — works with any tech stack (rules gracefully skip when not applicable)
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript (strict) |
+| Styling | TailwindCSS v4 + shadcn/ui |
+| Animations | framer-motion + CSS keyframes |
+| Database | PostgreSQL via Prisma ORM |
+| Font | Space Grotesk via next/font |
+| Icons | lucide-react |
+| Validation | zod |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20+
+- PostgreSQL database (or Neon free tier)
+- GitHub personal access token (with `public_repo` scope) — optional but recommended to avoid rate limits
+
+### Setup
 
 ```bash
+git clone <repo>
+cd prodready
+npm install
+npx prisma db push
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create `.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+DATABASE_URL=postgresql://...
+GITHUB_TOKEN=ghp_...   # optional
+```
 
-## Learn More
+### Scripts
 
-To learn more about Next.js, take a look at the following resources:
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start dev server with Turbopack |
+| `npm run build` | Production build |
+| `npm run lint` | ESLint |
+| `npm run db:push` | Push Prisma schema to DB |
+| `npm run db:studio` | Open Prisma Studio |
+| `npm run db:generate` | Generate Prisma client |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scanner Rules
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Rule | Category | Severity | What it checks |
+|------|----------|----------|---------------|
+| has-env-example | universal | nice-to-have | `.env.example` or `.env.sample` exists |
+| has-readme | universal | recommended | README with content (50+ chars) |
+| has-cicd | universal | recommended | CI/CD config (GitHub Actions, CircleCI, GitLab CI, Jenkins) |
+| has-tests | universal | recommended | Test files, test directory, or test framework in deps |
+| has-validation | universal | recommended | Input validation library in stack |
+| has-dockerfile | universal | recommended | Dockerfile or docker-compose |
+| has-strict-ts | typescript | recommended | `strict: true` in tsconfig.json |
+| has-retry-handling | universal | critical | HTTP calls without retry/timeout patterns |
+| has-error-handling | api-server/fullstack | critical | Express error middleware or Next.js error.tsx |
+| has-error-boundaries | web-app/fullstack | critical | React error boundaries or error.tsx |
+| has-rate-limiting | api-server/fullstack | recommended | Rate limiting in Express or Next.js API routes |
+| has-logging | api-server/fullstack | recommended | Structured logging library |
+| has-cors | api-server/fullstack | recommended | CORS middleware in Express |
+| has-monitoring | web-app/api-server/fullstack | nice-to-have | Monitoring/observability setup |
 
-## Deploy on Vercel
+## API
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### `POST /api/scan`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```json
+{ "repoUrl": "https://github.com/owner/repo", "force": false }
+```
+
+Returns `{ id: string, cached?: boolean }`.
+
+- Cached results within 1 hour are returned automatically
+- Set `force: true` to bypass cache
+
+### `GET /api/report/[id]`
+
+Returns full report JSON from the database.
+
+## Architecture
+
+```
+src/
+  app/           — App Router pages + API routes
+  components/    — React components (ui/ for shadcn, app components)
+  scanner/       — Scan engine
+    rules/       — One file per rule, each exporting { id, category, check() }
+    engine.ts    — Orchestrator: runs all rules in parallel
+    github.ts    — GitHub REST API client
+    stack-detector.ts — Detect framework, language, and ecosystem from package.json
+    types.ts     — Shared scanner types
+  lib/           — Prisma client, cn() utility
+```
+
+### Score Calculation
+
+- Starts at 100
+- Critical finding: -15
+- Recommended finding: -8
+- Nice-to-have finding: -3
+- Floor at 0
+- Dismissing with an option partially restores based on the option's score impact
+
+## Deployment
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new)
+
+Requires `DATABASE_URL` environment variable pointing to a PostgreSQL database.
+
+
