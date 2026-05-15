@@ -8,7 +8,6 @@ import { Loader2, ArrowRight, GitBranch } from "lucide-react"
 
 export default function ScanForm() {
   const [url, setUrl] = useState("")
-  const [token, setToken] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
@@ -24,10 +23,7 @@ export default function ScanForm() {
       const res = await fetch("/api/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          repoUrl: url.trim(),
-          githubToken: token.trim() || undefined,
-        }),
+        body: JSON.stringify({ repoUrl: url.trim() }),
       })
 
       const data = await res.json()
@@ -71,14 +67,6 @@ export default function ScanForm() {
           )}
         </Button>
       </div>
-
-      <Input
-        placeholder="GitHub token (optional — increases rate limit to 5k req/hr)"
-        value={token}
-        onChange={(e) => setToken(e.target.value)}
-        className="text-muted-foreground h-8 text-xs"
-        disabled={loading}
-      />
 
       {error && <p className="text-destructive text-sm">{error}</p>}
     </form>

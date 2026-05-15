@@ -12,7 +12,7 @@ export default function Home() {
       <main className="flex flex-1 flex-col items-center justify-center px-4 py-20">
         <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
           <div className="bg-amber-50 text-amber-700 mb-6 rounded-full px-4 py-1.5 text-sm font-medium">
-            Roast your side project before production does
+            A production readiness check for side projects
           </div>
 
           <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
@@ -20,12 +20,18 @@ export default function Home() {
             <span className="text-amber-500">ProdReady</span>?
           </h1>
 
-          <p className="text-muted-foreground mb-10 max-w-lg text-lg leading-relaxed">
-            Paste any public GitHub repo and get a production readiness score.
-            Opinionated findings, actionable fixes, and zero corporate jargon.
+          <p className="text-muted-foreground mb-6 max-w-lg text-lg leading-relaxed">
+            Paste any public GitHub repo and get a quick health check for your
+            side project. Practical pointers to ship with confidence.
           </p>
 
           <ScanForm />
+
+          <div className="text-muted-foreground mt-6 max-w-md text-xs leading-relaxed">
+            We check ~15 common things like README, CI/CD, error handling,
+            tests, and security basics. Not a full audit — just a sanity check
+            before you hit deploy.
+          </div>
         </div>
       </main>
 
