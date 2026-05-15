@@ -24,10 +24,13 @@ export async function generateMetadata({
 
 export default async function ReportPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ cached?: string }>
 }) {
   const { id } = await params
+  const { cached } = await searchParams
   const scan = await prisma.scan.findUnique({ where: { id } })
   if (!scan) notFound()
 
@@ -45,6 +48,7 @@ export default async function ReportPage({
       findings={findings}
       badges={scan.badges}
       createdAt={scan.createdAt.toISOString()}
+      cached={cached === "1"}
     />
   )
 }

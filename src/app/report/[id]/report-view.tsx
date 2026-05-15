@@ -41,6 +41,7 @@ interface ReportViewProps {
   findings: Finding[]
   badges: string[]
   createdAt: string
+  cached?: boolean
 }
 
 export default function ReportView({
@@ -53,6 +54,7 @@ export default function ReportView({
   findings,
   badges,
   createdAt,
+  cached,
 }: ReportViewProps) {
   const [scoreRecovery, setScoreRecovery] = useState(0)
   const displayScore = Math.min(100, score + scoreRecovery)
@@ -85,6 +87,12 @@ export default function ReportView({
 
       <div className="mb-8 flex flex-col items-center gap-4">
         <ScoreGauge score={displayScore} />
+
+        {cached && (
+          <div className="bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 rounded-full px-3 py-1 text-xs">
+            Cached result — same repo scanned less than an hour ago
+          </div>
+        )}
 
         <p className="text-muted-foreground text-xs">
           {displayScore >= 90

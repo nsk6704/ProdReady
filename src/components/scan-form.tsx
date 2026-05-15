@@ -34,7 +34,7 @@ export default function ScanForm() {
         return
       }
 
-      router.push(`/report/${data.id}`)
+      router.push(`/report/${data.id}${data.cached ? "?cached=1" : ""}`)
     } catch {
       setError("Something went wrong. Try again.")
       setLoading(false)
