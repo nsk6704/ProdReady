@@ -64,7 +64,7 @@ export default function IssueCard({ finding, onDismiss }: IssueCardProps) {
         onDismiss?.(optionId, recovery, finding.ruleId)
       }, 250)
     },
-    [finding.scoreImpact, onDismiss],
+    [finding.scoreImpact, finding.ruleId, onDismiss],
   )
 
   return (

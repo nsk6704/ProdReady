@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { motion, useAnimate } from "framer-motion"
+import { useAnimate } from "framer-motion"
 
 interface ScoreGaugeProps {
   score: number

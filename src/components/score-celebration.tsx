@@ -30,13 +30,15 @@ export default function ScoreCelebration({ amount, onComplete }: ScoreCelebratio
     return () => clearTimeout(timer)
   }, [onComplete])
 
-  const particles = Array.from({ length: 16 }, (_, i) => ({
-    angle: (i / 16) * 360,
-    color: COLORS[i % COLORS.length],
-    distance: 60 + Math.random() * 80,
-    size: 6 + Math.random() * 8,
-    delay: Math.random() * 0.1,
-  }))
+  const [particles] = useState(() =>
+    Array.from({ length: 16 }, (_, i) => ({
+      angle: (i / 16) * 360,
+      color: COLORS[i % COLORS.length],
+      distance: 60 + Math.random() * 80,
+      size: 6 + Math.random() * 8,
+      delay: Math.random() * 0.1,
+    })),
+  )
 
   return (
     <AnimatePresence>
