@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import { useState, useCallback } from "react"
 
 const severityConfig = {
   critical: {
@@ -51,14 +51,21 @@ interface IssueCardProps {
 
 export default function IssueCard({ finding, onDismiss }: IssueCardProps) {
   const [dismissed, setDismissed] = useState<string | null>(null)
+  const [dismissing, setDismissing] = useState(false)
   const config = severityConfig[finding.severity]
   const Icon = config.icon
 
-  const handleDismiss = (optionId: string, scoreImpact: number) => {
-    setDismissed(optionId)
-    const recovery = Math.abs(finding.scoreImpact) - Math.abs(scoreImpact)
-    onDismiss?.(optionId, recovery, finding.ruleId)
-  }
+  const handleDismiss = useCallback(
+    (optionId: string, scoreImpact: number) => {
+      setDismissing(true)
+      setTimeout(() => {
+        setDismissed(optionId)
+        const recovery = Math.abs(finding.scoreImpact) - Math.abs(scoreImpact)
+        onDismiss?.(optionId, recovery, finding.ruleId)
+      }, 250)
+    },
+    [finding.scoreImpact, onDismiss],
+  )
 
   return (
     <Card className={`${config.bg} ${config.border} transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md`}>
@@ -83,34 +90,50 @@ export default function IssueCard({ finding, onDismiss }: IssueCardProps) {
         </div>
 
         {finding.dismissOptions && finding.dismissOptions.length > 0 && !dismissed && (
-          <div className="bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-800 p-3">
-            <p className="mb-2 text-xs font-semibold text-amber-700 dark:text-amber-400">
-              Not relevant for your setup?
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {finding.dismissOptions.map((opt) => (
-                <Button
-                  key={opt.id}
-                  variant="default"
-                  size="sm"
-                  className="bg-amber-500 text-xs text-white hover:bg-amber-600"
-                  onClick={() => handleDismiss(opt.id, opt.scoreImpact)}
-                >
-                  {opt.label}
-                </Button>
-              ))}
+          <div
+            style={{
+              opacity: dismissing ? 0 : 1,
+              maxHeight: dismissing ? 0 : "300px",
+              overflow: "hidden",
+              transition: "opacity 0.25s ease-out, max-height 0.25s ease-out",
+            }}
+          >
+            <div className="bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-800 p-3">
+              <p className="mb-2 text-xs font-semibold text-amber-700 dark:text-amber-400">
+                Not relevant for your setup?
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {finding.dismissOptions.map((opt) => (
+                  <Button
+                    key={opt.id}
+                    variant="default"
+                    size="sm"
+                    className="bg-amber-500 text-xs text-white hover:bg-amber-600"
+                    onClick={() => handleDismiss(opt.id, opt.scoreImpact)}
+                    disabled={dismissing}
+                  >
+                    {opt.label}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
         )}
 
         {dismissed && (
-          <div className="flex items-center gap-2 rounded-md bg-green-50 p-3 text-xs text-green-700 dark:bg-green-950/20 dark:text-green-400">
+          <div
+            key={dismissed}
+            className="animate-pop-in flex items-center gap-2 rounded-md bg-green-50 p-3 text-xs text-green-700 dark:bg-green-950/20 dark:text-green-400"
+          >
             <ThumbsUp className="h-3 w-3 shrink-0" />
             <span>
               {finding.dismissOptions?.find((o) => o.id === dismissed)?.description}
             </span>
             <button
-              onClick={() => setDismissed(null)}
+              onClick={() => {
+                setDismissed(null)
+                setDismissing(false)
+              }}
               className="ml-auto text-green-500 hover:text-green-700"
             >
               <X className="h-3 w-3" />
