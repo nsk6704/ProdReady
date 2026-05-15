@@ -58,6 +58,11 @@ export default function ReportView({
       <div className="mb-8 flex flex-col items-center gap-4">
         <ScoreGauge score={score} />
 
+        <p className="text-muted-foreground text-xs">
+          90+ — Ship it &nbsp;·&nbsp; 50-89 — Tidy up &nbsp;·&nbsp; {"<"}50 — Worth
+          addressing before deploy
+        </p>
+
         <div className="text-center">
           <div className="flex items-center justify-center gap-2">
             <GitBranch className="h-5 w-5" />
@@ -145,9 +150,9 @@ export default function ReportView({
 
         {findings.length === 0 && (
           <div className="py-12 text-center">
-            <p className="text-2xl font-bold text-green-600">No issues found!</p>
+            <p className="text-2xl font-bold text-green-600">Looking good!</p>
             <p className="text-muted-foreground mt-2">
-              This repo is surprisingly production-ready. Ship it!
+              Your side project is ready to ship.
             </p>
           </div>
         )}
