@@ -23,7 +23,7 @@ export default async function Image({
             height: "100%",
             background: "#fff",
             fontSize: 48,
-            fontFamily: "Geist",
+            fontFamily: "system-ui, sans-serif",
           }}
         >
           Report Not Found
@@ -44,29 +44,14 @@ export default async function Image({
           width: "100%",
           height: "100%",
           background: "#fff",
-          fontFamily: "Geist",
+          fontFamily: "system-ui, sans-serif",
           padding: 80,
           flexDirection: "column",
           justifyContent: "center",
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 40,
-          }}
-        >
-          <div
-            style={{
-              fontSize: 32,
-              fontWeight: 700,
-              color: "#f59e0b",
-            }}
-          >
-            ProdReady
-          </div>
+        <div style={{ fontSize: 32, fontWeight: 700, color: "#f59e0b", marginBottom: 40 }}>
+          ProdReady
         </div>
 
         <div
@@ -77,63 +62,21 @@ export default async function Image({
           }}
         >
           <div style={{ display: "flex", flexDirection: "column" }}>
-            <div
-              style={{
-                fontSize: 64,
-                fontWeight: 700,
-                color: "#111",
-                marginBottom: 12,
-              }}
-            >
+            <div style={{ fontSize: 64, fontWeight: 700, color: "#111", marginBottom: 12 }}>
               {scan.owner}/{scan.name}
             </div>
-            <div
-              style={{
-                fontSize: 28,
-                color: "#666",
-              }}
-            >
-              Production Readiness Report
-            </div>
+            <div style={{ fontSize: 28, color: "#666" }}>Production Readiness Report</div>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 96,
-                fontWeight: 800,
-                color: scoreColor,
-                lineHeight: 1,
-              }}
-            >
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <div style={{ fontSize: 96, fontWeight: 800, color: scoreColor, lineHeight: 1 }}>
               {scan.score}
             </div>
-            <div
-              style={{
-                fontSize: 24,
-                color: scoreColor,
-                marginTop: 4,
-              }}
-            >
-              / 100
-            </div>
+            <div style={{ fontSize: 24, color: scoreColor, marginTop: 4 }}>/ 100</div>
           </div>
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 16,
-            marginTop: 60,
-            flexWrap: "wrap",
-          }}
-        >
+        <div style={{ display: "flex", gap: 16, marginTop: 60, flexWrap: "wrap" }}>
           {(scan.badges as string[]).slice(0, 5).map((badge) => (
             <div
               key={badge}

@@ -13,6 +13,13 @@ export const metadata: Metadata = {
   title: "ProdReady: Is your side project production ready?",
   description:
     "Paste a GitHub repo and get a quick production readiness check for your side project. Practical pointers to ship with confidence.",
+  openGraph: {
+    title: "ProdReady: Is your side project production ready?",
+    description:
+      "Paste a GitHub repo and get a quick production readiness check for your side project.",
+    siteName: "ProdReady",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

@@ -19,6 +19,7 @@ export async function generateMetadata({
     openGraph: {
       title: `${scan.owner}/${scan.name} scores ${scan.score}/100 on ProdReady`,
       description: `Production readiness report. Score: ${scan.score}/100. ${(scan.findings as unknown as Finding[]).length} issues found.`,
+      images: [{ url: `/report/${id}/opengraph-image`, width: 1200, height: 630 }],
     },
   }
 }
