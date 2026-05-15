@@ -10,6 +10,7 @@ import ShareButton from "@/components/share-button"
 import StaggerIn from "@/components/stagger-in"
 import { Separator } from "@/components/ui/separator"
 import { buttonVariants } from "@/components/ui/button"
+import { useState } from "react"
 import { ArrowLeft, GitBranch, Calendar, Check, X, Minus } from "lucide-react"
 import type { Archetype } from "@/scanner/types"
 
@@ -21,7 +22,7 @@ const CHECKS: { id: string; label: string; archetypes?: Archetype[] }[] = [
   { id: "has-validation", label: "Input validation" },
   { id: "has-strict-ts", label: "TypeScript strict mode" },
   { id: "has-retry-handling", label: "HTTP retry & timeout handling" },
-  { id: "has-dockerfile", archetypes: ["api-server"], label: "Dockerfile" },
+  { id: "has-dockerfile", label: "Dockerfile" },
   { id: "has-error-handling", archetypes: ["api-server", "fullstack"], label: "Global error handler" },
   { id: "has-error-boundaries", archetypes: ["web-app", "fullstack"], label: "React error boundaries" },
   { id: "has-rate-limiting", archetypes: ["api-server", "fullstack"], label: "Rate limiting" },
@@ -53,11 +54,18 @@ export default function ReportView({
   badges,
   createdAt,
 }: ReportViewProps) {
+  const [scoreRecovery, setScoreRecovery] = useState(0)
+  const displayScore = Math.min(100, score + scoreRecovery)
+
   const findingMap = new Set(findings.map((f) => f.ruleId))
 
   const critical = findings.filter((f) => f.severity === "critical")
   const recommended = findings.filter((f) => f.severity === "recommended")
   const niceToHave = findings.filter((f) => f.severity === "nice-to-have")
+
+  const handleDismiss = (_optionId: string, recovery: number) => {
+    setScoreRecovery((prev) => prev + recovery)
+  }
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col px-4 py-8">
@@ -76,12 +84,12 @@ export default function ReportView({
       </header>
 
       <div className="mb-8 flex flex-col items-center gap-4">
-        <ScoreGauge score={score} />
+        <ScoreGauge score={displayScore} />
 
         <p className="text-muted-foreground text-xs">
-          {score >= 90
+          {displayScore >= 90
             ? "Looking solid. Ship it."
-            : score >= 50
+            : displayScore >= 50
               ? "Getting there. Address the issues below."
               : "A bit rough. Start with the critical issues."}
         </p>
@@ -168,7 +176,7 @@ export default function ReportView({
               <div className="flex flex-col gap-3">
                 {critical.map((f, i) => (
                   <StaggerIn key={f.ruleId} index={i + 1}>
-                    <IssueCard finding={f} />
+                    <IssueCard finding={f} onDismiss={handleDismiss} />
                   </StaggerIn>
                 ))}
               </div>
@@ -185,7 +193,7 @@ export default function ReportView({
               <div className="flex flex-col gap-3">
                 {recommended.map((f, i) => (
                   <StaggerIn key={f.ruleId} index={i + 1}>
-                    <IssueCard finding={f} />
+                    <IssueCard finding={f} onDismiss={handleDismiss} />
                   </StaggerIn>
                 ))}
               </div>
@@ -202,7 +210,7 @@ export default function ReportView({
               <div className="flex flex-col gap-3">
                 {niceToHave.map((f, i) => (
                   <StaggerIn key={f.ruleId} index={i + 1}>
-                    <IssueCard finding={f} />
+                    <IssueCard finding={f} onDismiss={handleDismiss} />
                   </StaggerIn>
                 ))}
               </div>

@@ -20,7 +20,7 @@ export default function BadgeList({ badges }: BadgeListProps) {
   if (badges.length === 0) return null
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap justify-center gap-2">
       {badges.map((badge, i) => {
         const positive = isPositive(badge)
         return (

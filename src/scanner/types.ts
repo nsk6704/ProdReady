@@ -22,6 +22,13 @@ export interface Stack {
   httpClient: string[]
 }
 
+export interface DismissOption {
+  id: string
+  label: string
+  scoreImpact: number
+  description: string
+}
+
 export interface Finding {
   ruleId: string
   title: string
@@ -30,6 +37,7 @@ export interface Finding {
   scoreImpact: number
   suggestion: string
   badge: string | null
+  dismissOptions?: DismissOption[]
 }
 
 export interface ScanContext {

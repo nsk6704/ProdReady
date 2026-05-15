@@ -83,6 +83,7 @@ describe("runScanner", () => {
       },
     })
     const result = await runScanner(ctx)
+    expect(result.badges).toContain("Docker Ready")
     expect(result.badges).toContain("Has README")
     expect(result.badges).toContain("CI/CD Active")
     expect(result.badges).toContain("Has .env.example")
@@ -112,7 +113,7 @@ describe("runScanner", () => {
     const ruleIds = new Set(result.findings.map((f) => f.ruleId))
 
     const archetypeGated = [
-      "has-dockerfile", "has-rate-limiting", "has-error-boundaries",
+      "has-rate-limiting", "has-error-boundaries",
       "has-error-handling", "has-logging", "has-cors", "has-monitoring",
     ]
     for (const id of archetypeGated) {
