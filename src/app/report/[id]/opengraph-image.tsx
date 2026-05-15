@@ -82,9 +82,9 @@ export default async function Image({
         >
           P
         </div>
-        <span style={{ fontSize: 24, fontWeight: 600, color: "#f59e0b" }}>
-          ProdReady
-        </span>
+          <span style={{ fontSize: 24, fontWeight: 600, color: "#f59e0b" }}>
+            ProdReady
+          </span>
       </div>
 
       <div

@@ -21,6 +21,10 @@ export async function generateMetadata({
       description: `Production readiness report. Score: ${scan.score}/100. ${(scan.findings as unknown as Finding[]).length} issues found.`,
       images: [{ url: `/report/${id}/opengraph-image`, width: 1200, height: 630 }],
     },
+    twitter: {
+      card: "summary_large_image",
+      images: [{ url: `/report/${id}/opengraph-image`, width: 1200, height: 630 }],
+    },
   }
 }
 
