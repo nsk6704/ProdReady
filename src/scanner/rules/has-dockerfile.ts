@@ -10,15 +10,24 @@ export const rule: ScanRule = {
     )
     if (hasDockerfile) return null
 
+    const isApiServer = ctx.stack.archetype === "api-server"
+    const platformLikesDocker = ["Express", "Fastify", "Hono", "NestJS"].includes(
+      ctx.stack.framework ?? "",
+    )
+
+    if (!isApiServer && !platformLikesDocker) return null
+
     return {
       ruleId: "has-dockerfile",
       title: "No Dockerfile detected",
-      description:
-        "Your app is tied to your laptop like a leash. No containerization means your code works on your machine and your machine only.",
+      description: isApiServer
+        ? "Your API server has no containerization. That means manual deploys, environment drift, and praying the server doesn't go down."
+        : "Without Docker, your deployment is tied to your machine. Containerize for consistency.",
       severity: "recommended",
-      scoreImpact: -8,
-      suggestion:
-        "Add a `Dockerfile` for consistent deployments. Even a simple multi-stage Node.js Dockerfile is better than none.",
+      scoreImpact: isApiServer ? -8 : -5,
+      suggestion: isApiServer
+        ? "Add a `Dockerfile` and `docker-compose.yml`. Even a simple Node.js Dockerfile makes deploys reproducible."
+        : "Add a `Dockerfile` for consistent deployments across environments.",
       badge: "Missing Dockerfile",
     }
   },
