@@ -20,6 +20,7 @@ export const metadata: Metadata = {
       "Paste a GitHub repo and get a quick production readiness check for your side project.",
     siteName: "ProdReady",
     type: "website",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
   },
 };
 
