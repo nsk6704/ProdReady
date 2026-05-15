@@ -50,13 +50,16 @@ export default function ScanForm() {
       <div className="flex w-full gap-2">
         <div className="relative flex-1">
           <GitBranch className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-          <Input
-            placeholder="https://github.com/owner/repo"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="pl-9"
-            disabled={loading}
-          />
+          <div className="group relative">
+            <div className="absolute -inset-0.5 rounded-lg opacity-0 blur-sm transition-opacity duration-300 group-focus-within:opacity-100 bg-amber-400/30" />
+            <Input
+              placeholder="https://github.com/owner/repo"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="relative pl-9"
+              disabled={loading}
+            />
+          </div>
         </div>
         <Button type="submit" disabled={loading || !url.trim()}>
           {loading ? (

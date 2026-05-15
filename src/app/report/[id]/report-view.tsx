@@ -7,8 +7,9 @@ import StackDisplay from "@/components/stack-display"
 import BadgeList from "@/components/badge-list"
 import IssueCard from "@/components/issue-card"
 import ShareButton from "@/components/share-button"
+import StaggerIn from "@/components/stagger-in"
 import { Separator } from "@/components/ui/separator"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 import { ArrowLeft, GitBranch, Calendar } from "lucide-react"
 
 interface ReportViewProps {
@@ -92,42 +93,54 @@ export default function ReportView({
 
       <div className="flex flex-col gap-8">
         {critical.length > 0 && (
-          <section>
-            <h2 className="mb-4 text-lg font-semibold text-red-600 dark:text-red-400">
-              Critical Issues ({critical.length})
-            </h2>
-            <div className="flex flex-col gap-3">
-              {critical.map((f) => (
-                <IssueCard key={f.ruleId} finding={f} />
-              ))}
-            </div>
-          </section>
+          <StaggerIn index={0}>
+            <section>
+              <h2 className="mb-4 text-lg font-semibold text-red-600 dark:text-red-400">
+                Critical Issues ({critical.length})
+              </h2>
+              <div className="flex flex-col gap-3">
+                {critical.map((f, i) => (
+                  <StaggerIn key={f.ruleId} index={i + 1}>
+                    <IssueCard finding={f} />
+                  </StaggerIn>
+                ))}
+              </div>
+            </section>
+          </StaggerIn>
         )}
 
         {recommended.length > 0 && (
-          <section>
-            <h2 className="mb-4 text-lg font-semibold text-amber-600 dark:text-amber-400">
-              Recommended Improvements ({recommended.length})
-            </h2>
-            <div className="flex flex-col gap-3">
-              {recommended.map((f) => (
-                <IssueCard key={f.ruleId} finding={f} />
-              ))}
-            </div>
-          </section>
+          <StaggerIn index={1}>
+            <section>
+              <h2 className="mb-4 text-lg font-semibold text-amber-600 dark:text-amber-400">
+                Recommended Improvements ({recommended.length})
+              </h2>
+              <div className="flex flex-col gap-3">
+                {recommended.map((f, i) => (
+                  <StaggerIn key={f.ruleId} index={i + 1}>
+                    <IssueCard finding={f} />
+                  </StaggerIn>
+                ))}
+              </div>
+            </section>
+          </StaggerIn>
         )}
 
         {niceToHave.length > 0 && (
-          <section>
-            <h2 className="mb-4 text-lg font-semibold text-blue-600 dark:text-blue-400">
-              Nice-to-Have Enhancements ({niceToHave.length})
-            </h2>
-            <div className="flex flex-col gap-3">
-              {niceToHave.map((f) => (
-                <IssueCard key={f.ruleId} finding={f} />
-              ))}
-            </div>
-          </section>
+          <StaggerIn index={2}>
+            <section>
+              <h2 className="mb-4 text-lg font-semibold text-blue-600 dark:text-blue-400">
+                Nice-to-Have Enhancements ({niceToHave.length})
+              </h2>
+              <div className="flex flex-col gap-3">
+                {niceToHave.map((f, i) => (
+                  <StaggerIn key={f.ruleId} index={i + 1}>
+                    <IssueCard finding={f} />
+                  </StaggerIn>
+                ))}
+              </div>
+            </section>
+          </StaggerIn>
         )}
 
         {findings.length === 0 && (

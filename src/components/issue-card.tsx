@@ -43,7 +43,7 @@ export default function IssueCard({ finding }: { finding: Finding }) {
   const Icon = config.icon
 
   return (
-    <Card className={`${config.bg} ${config.border}`}>
+    <Card className={`${config.bg} ${config.border} transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-2">

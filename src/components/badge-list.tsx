@@ -21,17 +21,18 @@ export default function BadgeList({ badges }: BadgeListProps) {
 
   return (
     <div className="flex flex-wrap gap-2">
-      {badges.map((badge) => {
+      {badges.map((badge, i) => {
         const positive = isPositive(badge)
         return (
           <Badge
             key={badge}
             variant={positive ? "default" : "outline"}
-            className={`flex items-center gap-1 ${
+            className={`flex items-center gap-1 animate-pop-in ${
               positive
                 ? "bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400"
                 : "text-muted-foreground"
             }`}
+            style={{ animationDelay: `${i * 50}ms` }}
           >
             {positive ? (
               <CheckCircle2 className="h-3 w-3" />
