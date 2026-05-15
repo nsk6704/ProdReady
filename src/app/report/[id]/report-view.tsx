@@ -8,6 +8,7 @@ import BadgeList from "@/components/badge-list"
 import IssueCard from "@/components/issue-card"
 import ShareButton from "@/components/share-button"
 import StaggerIn from "@/components/stagger-in"
+import ScoreCelebration from "@/components/score-celebration"
 import { Separator } from "@/components/ui/separator"
 import { buttonVariants } from "@/components/ui/button"
 import { useState, useCallback } from "react"
@@ -68,6 +69,7 @@ export default function ReportView({
   const [rescanning, setRescanning] = useState(false)
   const [scoreRecovery, setScoreRecovery] = useState(0)
   const [dismissedRules, setDismissedRules] = useState<Set<string>>(new Set())
+  const [celebration, setCelebration] = useState<number | null>(null)
   const displayScore = Math.min(100, score + scoreRecovery)
 
   const findingMap = new Set(findings.map((f) => f.ruleId))
@@ -101,6 +103,7 @@ export default function ReportView({
     (_optionId: string, recovery: number, ruleId: string) => {
       setScoreRecovery((prev) => prev + recovery)
       setDismissedRules((prev) => new Set(prev).add(ruleId))
+      setCelebration(recovery)
     },
     [],
   )
@@ -145,18 +148,25 @@ export default function ReportView({
         )}
 
         {hasRecovered ? (
-          <div className="flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-950/30 dark:text-green-400">
+          <div className="animate-pop-in flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-950/30 dark:text-green-400">
             <ArrowUp className="h-3 w-3" />
             Score improved by {scoreRecovery} points
           </div>
         ) : (
-          <p className="text-muted-foreground text-xs">
+          <p className="animate-fade-in-up text-muted-foreground text-xs">
             {displayScore >= 90
               ? "Looking solid. Ship it."
               : displayScore >= 50
                 ? "Getting there. Address the issues below."
                 : "A bit rough. Start with the critical issues."}
           </p>
+        )}
+
+        {celebration !== null && (
+          <ScoreCelebration
+            amount={celebration}
+            onComplete={() => setCelebration(null)}
+          />
         )}
 
         <div className="text-center">
@@ -192,51 +202,57 @@ export default function ReportView({
 
       <Separator className="mb-8" />
 
-      <section className="mb-8">
-        <h2 className="mb-4 text-lg font-semibold">What We Checked</h2>
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {CHECKS.map((check) => {
-            const isApplicable =
-              (!check.archetypes || check.archetypes.includes(stack.archetype)) &&
-              (!check.languages || check.languages.includes(stack.language))
-            const isFinding = findingMap.has(check.id)
-            const isDismissed = dismissedRules.has(check.id)
-            let Icon: typeof Check
-            let statusClass: string
-            if (!isApplicable) {
-              Icon = Minus
-              statusClass = "text-muted-foreground"
-            } else if (isDismissed) {
-              Icon = Check
-              statusClass = "text-green-500"
-            } else if (isFinding) {
-              Icon = X
-              statusClass = "text-red-500"
-            } else {
-              Icon = Check
-              statusClass = "text-green-500"
-            }
-            return (
-              <div key={check.id} className="flex items-center gap-2 text-sm">
-                <Icon className={`h-4 w-4 ${statusClass}`} />
-                <span className={!isApplicable ? "text-muted-foreground" : ""}>
-                  {check.label}
-                </span>
-                {isDismissed && (
-                  <span className="ml-auto text-xs text-green-600">
-                    Dismissed
+      <StaggerIn index={3}>
+        <section className="mb-8">
+          <h2 className="mb-4 text-lg font-semibold">What We Checked</h2>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {CHECKS.map((check, idx) => {
+              const isApplicable =
+                (!check.archetypes || check.archetypes.includes(stack.archetype)) &&
+                (!check.languages || check.languages.includes(stack.language))
+              const isFinding = findingMap.has(check.id)
+              const isDismissed = dismissedRules.has(check.id)
+              let Icon: typeof Check
+              let statusClass: string
+              if (!isApplicable) {
+                Icon = Minus
+                statusClass = "text-muted-foreground"
+              } else if (isDismissed) {
+                Icon = Check
+                statusClass = "text-green-500"
+              } else if (isFinding) {
+                Icon = X
+                statusClass = "text-red-500"
+              } else {
+                Icon = Check
+                statusClass = "text-green-500"
+              }
+              return (
+                <div
+                  key={check.id}
+                  className="animate-fade-in-up flex items-center gap-2 text-sm"
+                  style={{ animationDelay: `${idx * 60}ms` }}
+                >
+                  <Icon className={`h-4 w-4 ${statusClass}`} />
+                  <span className={!isApplicable ? "text-muted-foreground" : ""}>
+                    {check.label}
                   </span>
-                )}
-                {!isApplicable && !isDismissed && (
-                  <span className="text-muted-foreground ml-auto text-xs">
-                    N/A
-                  </span>
-                )}
-              </div>
-            )
-          })}
-        </div>
-      </section>
+                  {isDismissed && (
+                    <span className="ml-auto text-xs text-green-600">
+                      Dismissed
+                    </span>
+                  )}
+                  {!isApplicable && !isDismissed && (
+                    <span className="text-muted-foreground ml-auto text-xs">
+                      N/A
+                    </span>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      </StaggerIn>
 
       <Separator className="mb-8" />
 
