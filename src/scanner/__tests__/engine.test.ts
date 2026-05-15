@@ -83,7 +83,6 @@ describe("runScanner", () => {
       },
     })
     const result = await runScanner(ctx)
-    expect(result.badges).toContain("Docker Ready")
     expect(result.badges).toContain("Has README")
     expect(result.badges).toContain("CI/CD Active")
     expect(result.badges).toContain("Has .env.example")

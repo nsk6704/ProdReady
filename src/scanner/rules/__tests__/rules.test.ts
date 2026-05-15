@@ -59,11 +59,9 @@ describe("has-dockerfile", () => {
     expect(await rule.check(ctx({ files: ["docker-compose.yml"] }))).toBeNull()
   })
 
-  it("is no-op for web-app archetype", async () => {
+  it("is gated to api-server archetype only", async () => {
     const { rule } = await import("../has-dockerfile")
-    expect(await rule.check(ctx({
-      stack: ctx().stack,
-    }))).toBeNull()
+    expect(rule.archetypes).toEqual(["api-server"])
   })
 
   it("fails for api-server without Dockerfile", async () => {
@@ -74,6 +72,7 @@ describe("has-dockerfile", () => {
     expect(r).not.toBeNull()
     expect(r!.ruleId).toBe("has-dockerfile")
     expect(r!.severity).toBe("recommended")
+    expect(r!.scoreImpact).toBe(-8)
   })
 })
 

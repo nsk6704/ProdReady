@@ -10,7 +10,7 @@ import ShareButton from "@/components/share-button"
 import StaggerIn from "@/components/stagger-in"
 import { Separator } from "@/components/ui/separator"
 import { buttonVariants } from "@/components/ui/button"
-import { ArrowLeft, GitBranch, Calendar } from "lucide-react"
+import { ArrowLeft, GitBranch, Calendar, Check, X, Minus } from "lucide-react"
 import type { Archetype } from "@/scanner/types"
 
 const CHECKS: { id: string; label: string; archetypes?: Archetype[] }[] = [
@@ -21,7 +21,7 @@ const CHECKS: { id: string; label: string; archetypes?: Archetype[] }[] = [
   { id: "has-validation", label: "Input validation" },
   { id: "has-strict-ts", label: "TypeScript strict mode" },
   { id: "has-retry-handling", label: "HTTP retry & timeout handling" },
-  { id: "has-dockerfile", archetypes: ["web-app", "api-server", "fullstack"], label: "Dockerfile" },
+  { id: "has-dockerfile", archetypes: ["api-server"], label: "Dockerfile" },
   { id: "has-error-handling", archetypes: ["api-server", "fullstack"], label: "Global error handler" },
   { id: "has-error-boundaries", archetypes: ["web-app", "fullstack"], label: "React error boundaries" },
   { id: "has-rate-limiting", archetypes: ["api-server", "fullstack"], label: "Rate limiting" },
@@ -79,8 +79,11 @@ export default function ReportView({
         <ScoreGauge score={score} />
 
         <p className="text-muted-foreground text-xs">
-          90+ — Ship it &nbsp;·&nbsp; 50-89 — Tidy up &nbsp;·&nbsp; {"<"}50 — Worth
-          addressing before deploy
+          {score >= 90
+            ? "Looking solid. Ship it."
+            : score >= 50
+              ? "Getting there. Address the issues below."
+              : "A bit rough. Start with the critical issues."}
         </p>
 
         <div className="text-center">
@@ -124,21 +127,21 @@ export default function ReportView({
               !check.archetypes ||
               check.archetypes.includes(stack.archetype)
             const isFinding = findingMap.has(check.id)
-            let icon: string
+            let Icon: typeof Check
             let statusClass: string
             if (!isApplicable) {
-              icon = "—"
+              Icon = Minus
               statusClass = "text-muted-foreground"
             } else if (isFinding) {
-              icon = "✗"
+              Icon = X
               statusClass = "text-red-500"
             } else {
-              icon = "✓"
+              Icon = Check
               statusClass = "text-green-500"
             }
             return (
               <div key={check.id} className="flex items-center gap-2 text-sm">
-                <span className={`w-4 font-bold ${statusClass}`}>{icon}</span>
+                <Icon className={`h-4 w-4 ${statusClass}`} />
                 <span className={!isApplicable ? "text-muted-foreground" : ""}>
                   {check.label}
                 </span>
