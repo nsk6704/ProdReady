@@ -44,6 +44,7 @@ describe("has-env-example", () => {
     expect(r!.ruleId).toBe("has-env-example")
     expect(r!.severity).toBe("nice-to-have")
     expect(r!.scoreImpact).toBe(-3)
+    expect(r!.dismissOptions).toHaveLength(4)
   })
 })
 
