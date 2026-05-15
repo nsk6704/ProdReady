@@ -13,31 +13,33 @@ import { Separator } from "@/components/ui/separator"
 import { buttonVariants } from "@/components/ui/button"
 import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, GitBranch, Calendar, Check, X, Minus, ArrowUp, RefreshCw, Loader2 } from "lucide-react"
+import { ArrowLeft, GitBranch, Calendar, Check, X, Minus, ArrowUp, RefreshCw, Loader2, HelpCircle } from "lucide-react"
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import type { Archetype } from "@/scanner/types"
 
 interface CheckItem {
   id: string
   label: string
+  howItWorks: string
   archetypes?: Archetype[]
   languages?: string[]
 }
 
 const CHECKS: CheckItem[] = [
-  { id: "has-env-example", label: ".env.example file" },
-  { id: "has-readme", label: "README with documentation" },
-  { id: "has-cicd", label: "CI/CD pipeline" },
-  { id: "has-tests", label: "Test setup" },
-  { id: "has-validation", label: "Input validation" },
-  { id: "has-strict-ts", label: "Strict type checking", languages: ["typescript"] },
-  { id: "has-retry-handling", label: "HTTP retry & timeout handling" },
-  { id: "has-dockerfile", label: "Dockerfile" },
-  { id: "has-error-handling", archetypes: ["api-server", "fullstack"], label: "Global error handler" },
-  { id: "has-error-boundaries", archetypes: ["web-app", "fullstack"], label: "React error boundaries" },
-  { id: "has-rate-limiting", archetypes: ["api-server", "fullstack"], label: "Rate limiting" },
-  { id: "has-logging", archetypes: ["api-server", "fullstack"], label: "Structured logging" },
-  { id: "has-cors", archetypes: ["api-server", "fullstack"], label: "CORS configuration" },
-  { id: "has-monitoring", archetypes: ["web-app", "api-server", "fullstack"], label: "Monitoring & observability" },
+  { id: "has-env-example", label: ".env.example file", howItWorks: "Looks for .env.example or .env.sample in the repo. Does not verify the file has actual content." },
+  { id: "has-readme", label: "README with documentation", howItWorks: "Checks that a README.md exists with at least 50 characters of content." },
+  { id: "has-cicd", label: "CI/CD pipeline", howItWorks: "Looks for CI config files: GitHub Actions, CircleCI, GitLab CI, or Jenkins." },
+  { id: "has-tests", label: "Test setup", howItWorks: "Checks for a test framework in dependencies or test files (.test., .spec., __tests__/)." },
+  { id: "has-validation", label: "Input validation", howItWorks: "Checks for a validation library (zod, joi, etc.) in package.json dependencies." },
+  { id: "has-strict-ts", label: "Strict type checking", languages: ["typescript"], howItWorks: "Only runs for TypeScript projects. Checks if tsconfig.json has strict: true." },
+  { id: "has-retry-handling", label: "HTTP retry & timeout handling", howItWorks: "Scans source files for HTTP calls and checks if they have retry or timeout logic. Only checks up to 20 files." },
+  { id: "has-dockerfile", label: "Dockerfile", howItWorks: "Looks for Dockerfile, docker-compose.yml, or docker-compose.yaml in the repo." },
+  { id: "has-error-handling", archetypes: ["api-server", "fullstack"], label: "Global error handler", howItWorks: "Checks for Express error middleware or Next.js error.tsx. Only runs for api-server and fullstack projects." },
+  { id: "has-error-boundaries", archetypes: ["web-app", "fullstack"], label: "React error boundaries", howItWorks: "Only runs for React projects. Looks for ErrorBoundary components or error.tsx files." },
+  { id: "has-rate-limiting", archetypes: ["api-server", "fullstack"], label: "Rate limiting", howItWorks: "Checks for rate limiting packages in dependencies or files with rate-limit-related names. Does not detect in-code rate limiting logic." },
+  { id: "has-logging", archetypes: ["api-server", "fullstack"], label: "Structured logging", howItWorks: "Checks for a structured logging library (pino, winston, etc.) in your stack." },
+  { id: "has-cors", archetypes: ["api-server", "fullstack"], label: "CORS configuration", howItWorks: "Only runs for Express projects. Checks if cors package is in dependencies or imported in source files." },
+  { id: "has-monitoring", archetypes: ["web-app", "api-server", "fullstack"], label: "Monitoring & observability", howItWorks: "Checks for monitoring tools (Sentry, Datadog, OpenTelemetry, etc.) in your stack." },
 ]
 
 interface ReportViewProps {
@@ -237,6 +239,14 @@ export default function ReportView({
                   <span className={!isApplicable ? "text-muted-foreground" : ""}>
                     {check.label}
                   </span>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <HelpCircle className="text-muted-foreground h-3 w-3 cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{check.howItWorks}</p>
+                    </TooltipContent>
+                  </Tooltip>
                   {isDismissed && (
                     <span className="ml-auto text-xs text-green-600">
                       Dismissed
