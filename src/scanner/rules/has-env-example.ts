@@ -13,17 +13,17 @@ export const rule: ScanRule = {
       ruleId: "has-env-example",
       title: "No .env.example found",
       description:
-        "Your repo is keeping env vars a secret — even from your teammates. Without a sample env file, anyone cloning your project has to guess what variables to set.",
+        "Your repo is keeping env vars a secret - even from your teammates. Without a sample env file, anyone cloning your project has to guess what variables to set.",
       severity: "nice-to-have",
       scoreImpact: -3,
       suggestion:
         "Create a `.env.example` file listing all required environment variables with placeholder values.",
       badge: "Missing .env.example",
       dismissOptions: [
-        { id: "platform-defaults", label: "Using platform defaults (Vercel/Railway)", scoreImpact: -1, description: "Platforms handle env vars in their UI. Fair enough." },
+        { id: "secret-manager", label: "Using a secret manager (Doppler/1Password)", scoreImpact: -1, description: "External secret managers replace the need for a local file." },
         { id: "no-vars", label: "No env vars needed yet", scoreImpact: -1, description: "Add one when you introduce env-specific config." },
         { id: "readme", label: "Documented in README", scoreImpact: -2, description: "Still handy to have a standalone file, but this works." },
-        { id: "should-add", label: "I should add one", scoreImpact: -3, description: "It's quick — create a `.env.example` with placeholder values." },
+        { id: "should-add", label: "I should add one", scoreImpact: -3, description: "It's quick - create a `.env.example` with placeholder values." },
       ],
     }
   },
