@@ -10,7 +10,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "ProdReady — Is your side project production-ready?",
+  title: "ProdReady - Is your side project production-ready?",
   description:
     "Paste a GitHub repo and get a quick production readiness check for your side project. Practical pointers to ship with confidence.",
 };

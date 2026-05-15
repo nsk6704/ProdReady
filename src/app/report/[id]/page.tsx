@@ -10,13 +10,14 @@ export async function generateMetadata({
 }) {
   const { id } = await params
   const scan = await prisma.scan.findUnique({ where: { id } })
-  if (!scan) return { title: "Report Not Found — ProdReady" }
+  if (!scan) return { title: "Report Not Found - ProdReady" }
 
   return {
-    title: `${scan.owner}/${scan.name} — ProdReady Score: ${scan.score}/100`,
+    title: `${scan.owner}/${scan.name} - ProdReady Score: ${scan.score}/100`,
+
     description: `Production readiness report for ${scan.owner}/${scan.name}. Score: ${scan.score}/100.`,
     openGraph: {
-      title: `${scan.owner}/${scan.name} — ProdReady Score: ${scan.score}/100`,
+      title: `${scan.owner}/${scan.name} - ProdReady Score: ${scan.score}/100`,
       description: `Production readiness report. Score: ${scan.score}/100. ${(scan.findings as unknown as Finding[]).length} issues found.`,
     },
   }

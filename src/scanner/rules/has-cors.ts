@@ -34,7 +34,7 @@ export const rule: ScanRule = {
       ruleId: "has-cors",
       title: "No CORS configuration detected",
       description:
-        "Your Express API is either locked down tight or wide open — and guessing isn't a strategy. Without explicit CORS config, browser-based clients will hit errors.",
+        "Your Express API is either locked down tight or wide open - and guessing isn't a strategy. Without explicit CORS config, browser-based clients will hit errors.",
       severity: "recommended",
       scoreImpact: -8,
       suggestion:

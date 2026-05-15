@@ -101,7 +101,7 @@ export default function ReportView({
 
         {cached && (
           <div className="bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 rounded-full px-3 py-1 text-xs">
-            Cached result — same repo scanned less than an hour ago
+            Cached result - same repo scanned less than an hour ago
           </div>
         )}
 
