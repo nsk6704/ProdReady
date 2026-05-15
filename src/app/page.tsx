@@ -32,6 +32,11 @@ export default function Home() {
             tests, and security basics. Not a full audit — just a sanity check
             before you hit deploy.
           </div>
+
+          <div className="text-muted-foreground/60 mt-3 max-w-md text-xs leading-relaxed">
+            Reports are stored for 24 hours so you can share the link. No code
+            is ever stored — only metadata from the scan.
+          </div>
         </div>
       </main>
 
