@@ -94,6 +94,37 @@ GITHUB_TOKEN=ghp_...   # optional
 | has-cors | api-server/fullstack | recommended | CORS middleware in Express |
 | has-monitoring | web-app/api-server/fullstack | nice-to-have | Monitoring/observability setup |
 
+## Scope & Limitations
+
+Each check runs against your repo's visible files and metadata via the GitHub API. We don't clone, build, or run your code. Here's what that means:
+
+- **has-env-example** — checks file exists, not whether it's kept up to date with actual env vars
+- **has-readme** — checks file length, not quality
+- **has-tests** — looks for a test framework in dependencies or test files/folders; doesn't confirm tests actually run or pass
+- **has-validation** — detects validation libraries in package.json only (not source-level usage or custom validation)
+- **has-strict-ts** — reads tsconfig.json; doesn't check for actual strict-mode violations
+- **has-retry-handling** — scans up to 20 source files for HTTP calls and looks for retry/timeout patterns; may miss complex setups
+- **has-error-handling** — checks for Express error middleware or Next.js error.tsx; doesn't confirm it covers all routes
+- **has-error-boundaries** — looks for ErrorBoundary components or error.tsx; doesn't verify they're wired correctly
+- **has-rate-limiting** — detects rate limit packages in dependencies or rate-limit-related filenames; doesn't inspect middleware config
+- **has-logging / has-monitoring / has-cors** — checks dependency lists; doesn't confirm actual usage
+- Rules that don't apply to your stack are silently skipped (e.g. CORS for a static site)
+
+Every check also shows this explanation via an info tooltip on the report page so you know exactly what was inspected.
+
+## Future Scope
+
+Planned improvements and rule candidates:
+
+- **Source-level validation** — deeper AST scanning for error handling coverage, auth middleware, and security headers
+- **Deeper caching strategy** — analyze lockfiles and dependency trees for known vulnerabilities
+- **Multi-file scans** — check that patterns like database migrations, health check endpoints, and graceful shutdowns are present
+- **Framework expansions** — add rules for Django (SECRET_KEY, DEBUG), Flask, FastAPI, Rails, Phoenix, Go stdlib projects
+- **CI/CD evaluation** — verify pipeline actually runs lint, typecheck, and tests rather than just existing
+- **License & contribution files** — detect CODEOWNERS, CONTRIBUTING.md, SECURITY.md
+- **Bundle analysis** — rough estimate of JS bundle size from import graphs (for web-app archetype)
+- **Accessibility checks** — detect aria labels, semantic HTML usage for frontend projects
+
 ## API
 
 ### `POST /api/scan`
