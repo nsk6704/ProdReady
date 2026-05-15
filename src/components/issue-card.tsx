@@ -7,6 +7,7 @@ import {
   Info,
   Lightbulb,
   ThumbsUp,
+  X,
 } from "lucide-react"
 import {
   Card,
@@ -45,7 +46,7 @@ const severityConfig = {
 
 interface IssueCardProps {
   finding: Finding
-  onDismiss?: (optionId: string, recovery: number) => void
+  onDismiss?: (optionId: string, recovery: number, ruleId: string) => void
 }
 
 export default function IssueCard({ finding, onDismiss }: IssueCardProps) {
@@ -56,7 +57,7 @@ export default function IssueCard({ finding, onDismiss }: IssueCardProps) {
   const handleDismiss = (optionId: string, scoreImpact: number) => {
     setDismissed(optionId)
     const recovery = Math.abs(finding.scoreImpact) - Math.abs(scoreImpact)
-    onDismiss?.(optionId, recovery)
+    onDismiss?.(optionId, recovery, finding.ruleId)
   }
 
   return (
@@ -82,15 +83,17 @@ export default function IssueCard({ finding, onDismiss }: IssueCardProps) {
         </div>
 
         {finding.dismissOptions && finding.dismissOptions.length > 0 && !dismissed && (
-          <div className="space-y-2">
-            <p className="text-muted-foreground text-xs font-medium">Not an issue? Tell us why:</p>
+          <div className="bg-amber-50 dark:bg-amber-950/20 rounded-lg border border-amber-200 dark:border-amber-800 p-3">
+            <p className="mb-2 text-xs font-semibold text-amber-700 dark:text-amber-400">
+              Not relevant for your setup?
+            </p>
             <div className="flex flex-wrap gap-2">
               {finding.dismissOptions.map((opt) => (
                 <Button
                   key={opt.id}
-                  variant="outline"
+                  variant="default"
                   size="sm"
-                  className="text-xs"
+                  className="bg-amber-500 text-xs text-white hover:bg-amber-600"
                   onClick={() => handleDismiss(opt.id, opt.scoreImpact)}
                 >
                   {opt.label}
@@ -101,11 +104,17 @@ export default function IssueCard({ finding, onDismiss }: IssueCardProps) {
         )}
 
         {dismissed && (
-          <div className="flex items-center gap-2 text-xs text-green-600">
-            <ThumbsUp className="h-3 w-3" />
+          <div className="flex items-center gap-2 rounded-md bg-green-50 p-3 text-xs text-green-700 dark:bg-green-950/20 dark:text-green-400">
+            <ThumbsUp className="h-3 w-3 shrink-0" />
             <span>
               {finding.dismissOptions?.find((o) => o.id === dismissed)?.description}
             </span>
+            <button
+              onClick={() => setDismissed(null)}
+              className="ml-auto text-green-500 hover:text-green-700"
+            >
+              <X className="h-3 w-3" />
+            </button>
           </div>
         )}
       </CardContent>
