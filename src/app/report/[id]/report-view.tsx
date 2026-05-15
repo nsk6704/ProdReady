@@ -10,8 +10,8 @@ import ShareButton from "@/components/share-button"
 import StaggerIn from "@/components/stagger-in"
 import { Separator } from "@/components/ui/separator"
 import { buttonVariants } from "@/components/ui/button"
-import { useState } from "react"
-import { ArrowLeft, GitBranch, Calendar, Check, X, Minus } from "lucide-react"
+import { useState, useCallback } from "react"
+import { ArrowLeft, GitBranch, Calendar, Check, X, Minus, ArrowUp } from "lucide-react"
 import type { Archetype } from "@/scanner/types"
 
 const CHECKS: { id: string; label: string; archetypes?: Archetype[] }[] = [
@@ -57,17 +57,28 @@ export default function ReportView({
   cached,
 }: ReportViewProps) {
   const [scoreRecovery, setScoreRecovery] = useState(0)
+  const [dismissedRules, setDismissedRules] = useState<Set<string>>(new Set())
   const displayScore = Math.min(100, score + scoreRecovery)
 
   const findingMap = new Set(findings.map((f) => f.ruleId))
+  const filteredBadges = badges.filter((b) => {
+    return !findings.some(
+      (f) => f.badge === b && dismissedRules.has(f.ruleId),
+    )
+  })
+  const hasRecovered = scoreRecovery > 0
 
   const critical = findings.filter((f) => f.severity === "critical")
   const recommended = findings.filter((f) => f.severity === "recommended")
   const niceToHave = findings.filter((f) => f.severity === "nice-to-have")
 
-  const handleDismiss = (_optionId: string, recovery: number) => {
-    setScoreRecovery((prev) => prev + recovery)
-  }
+  const handleDismiss = useCallback(
+    (_optionId: string, recovery: number, ruleId: string) => {
+      setScoreRecovery((prev) => prev + recovery)
+      setDismissedRules((prev) => new Set(prev).add(ruleId))
+    },
+    [],
+  )
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col px-4 py-8">
@@ -94,13 +105,20 @@ export default function ReportView({
           </div>
         )}
 
-        <p className="text-muted-foreground text-xs">
-          {displayScore >= 90
-            ? "Looking solid. Ship it."
-            : displayScore >= 50
-              ? "Getting there. Address the issues below."
-              : "A bit rough. Start with the critical issues."}
-        </p>
+        {hasRecovered ? (
+          <div className="flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-950/30 dark:text-green-400">
+            <ArrowUp className="h-3 w-3" />
+            Score improved by {scoreRecovery} points
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-xs">
+            {displayScore >= 90
+              ? "Looking solid. Ship it."
+              : displayScore >= 50
+                ? "Getting there. Address the issues below."
+                : "A bit rough. Start with the critical issues."}
+          </p>
+        )}
 
         <div className="text-center">
           <div className="flex items-center justify-center gap-2">
@@ -121,7 +139,7 @@ export default function ReportView({
 
         <StackDisplay stack={stack} />
 
-        <BadgeList badges={badges} />
+        <BadgeList badges={filteredBadges} />
 
         <div className="text-muted-foreground flex items-center gap-1 text-xs">
           <Calendar className="h-3 w-3" />
@@ -143,11 +161,15 @@ export default function ReportView({
               !check.archetypes ||
               check.archetypes.includes(stack.archetype)
             const isFinding = findingMap.has(check.id)
+            const isDismissed = dismissedRules.has(check.id)
             let Icon: typeof Check
             let statusClass: string
             if (!isApplicable) {
               Icon = Minus
               statusClass = "text-muted-foreground"
+            } else if (isDismissed) {
+              Icon = Check
+              statusClass = "text-green-500"
             } else if (isFinding) {
               Icon = X
               statusClass = "text-red-500"
@@ -161,7 +183,12 @@ export default function ReportView({
                 <span className={!isApplicable ? "text-muted-foreground" : ""}>
                   {check.label}
                 </span>
-                {!isApplicable && (
+                {isDismissed && (
+                  <span className="ml-auto text-xs text-green-600">
+                    Dismissed
+                  </span>
+                )}
+                {!isApplicable && !isDismissed && (
                   <span className="text-muted-foreground ml-auto text-xs">
                     N/A
                   </span>
