@@ -14,13 +14,20 @@ import { useState, useCallback } from "react"
 import { ArrowLeft, GitBranch, Calendar, Check, X, Minus, ArrowUp } from "lucide-react"
 import type { Archetype } from "@/scanner/types"
 
-const CHECKS: { id: string; label: string; archetypes?: Archetype[] }[] = [
+interface CheckItem {
+  id: string
+  label: string
+  archetypes?: Archetype[]
+  languages?: string[]
+}
+
+const CHECKS: CheckItem[] = [
   { id: "has-env-example", label: ".env.example file" },
   { id: "has-readme", label: "README with documentation" },
   { id: "has-cicd", label: "CI/CD pipeline" },
   { id: "has-tests", label: "Test setup" },
   { id: "has-validation", label: "Input validation" },
-  { id: "has-strict-ts", label: "TypeScript strict mode" },
+  { id: "has-strict-ts", label: "Strict type checking", languages: ["typescript"] },
   { id: "has-retry-handling", label: "HTTP retry & timeout handling" },
   { id: "has-dockerfile", label: "Dockerfile" },
   { id: "has-error-handling", archetypes: ["api-server", "fullstack"], label: "Global error handler" },
@@ -158,8 +165,8 @@ export default function ReportView({
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {CHECKS.map((check) => {
             const isApplicable =
-              !check.archetypes ||
-              check.archetypes.includes(stack.archetype)
+              (!check.archetypes || check.archetypes.includes(stack.archetype)) &&
+              (!check.languages || check.languages.includes(stack.language))
             const isFinding = findingMap.has(check.id)
             const isDismissed = dismissedRules.has(check.id)
             let Icon: typeof Check
