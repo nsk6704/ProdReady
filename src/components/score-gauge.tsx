@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
+import { motion, useAnimate } from "framer-motion"
 
 interface ScoreGaugeProps {
   score: number
@@ -11,6 +12,7 @@ export default function ScoreGauge({ score }: ScoreGaugeProps) {
   const [ready, setReady] = useState(false)
   const [pulse, setPulse] = useState(false)
   const prevScore = useRef(0)
+  const [scope, animate] = useAnimate()
 
   useEffect(() => {
     const from = prevScore.current
@@ -20,6 +22,11 @@ export default function ScoreGauge({ score }: ScoreGaugeProps) {
     if (diff > 0) {
       setPulse(true)
       setTimeout(() => setPulse(false), 600)
+      animate(
+        scope.current,
+        { scale: [1, 1.08, 0.95, 1.02, 1] },
+        { duration: 0.6, ease: "easeOut" },
+      )
     }
 
     const duration = 500
@@ -41,7 +48,7 @@ export default function ScoreGauge({ score }: ScoreGaugeProps) {
       clearInterval(interval)
       clearTimeout(timer)
     }
-  }, [score])
+  }, [score, animate, scope])
 
   const color =
     score >= 80
@@ -69,7 +76,7 @@ export default function ScoreGauge({ score }: ScoreGaugeProps) {
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="relative flex items-center justify-center">
+      <div ref={scope} className="relative flex items-center justify-center">
         <svg className="h-32 w-32 -rotate-90" viewBox="0 0 120 120">
           <circle
             cx="60"
