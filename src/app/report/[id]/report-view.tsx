@@ -11,7 +11,8 @@ import StaggerIn from "@/components/stagger-in"
 import { Separator } from "@/components/ui/separator"
 import { buttonVariants } from "@/components/ui/button"
 import { useState, useCallback } from "react"
-import { ArrowLeft, GitBranch, Calendar, Check, X, Minus, ArrowUp } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { ArrowLeft, GitBranch, Calendar, Check, X, Minus, ArrowUp, RefreshCw, Loader2 } from "lucide-react"
 import type { Archetype } from "@/scanner/types"
 
 interface CheckItem {
@@ -63,6 +64,8 @@ export default function ReportView({
   createdAt,
   cached,
 }: ReportViewProps) {
+  const router = useRouter()
+  const [rescanning, setRescanning] = useState(false)
   const [scoreRecovery, setScoreRecovery] = useState(0)
   const [dismissedRules, setDismissedRules] = useState<Set<string>>(new Set())
   const displayScore = Math.min(100, score + scoreRecovery)
@@ -78,6 +81,21 @@ export default function ReportView({
   const critical = findings.filter((f) => f.severity === "critical")
   const recommended = findings.filter((f) => f.severity === "recommended")
   const niceToHave = findings.filter((f) => f.severity === "nice-to-have")
+
+  const handleRescan = async () => {
+    setRescanning(true)
+    try {
+      const res = await fetch("/api/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ repoUrl, force: true }),
+      })
+      const data = await res.json()
+      router.push(`/report/${data.id}`)
+    } catch {
+      setRescanning(false)
+    }
+  }
 
   const handleDismiss = useCallback(
     (_optionId: string, recovery: number, ruleId: string) => {
@@ -107,8 +125,22 @@ export default function ReportView({
         <ScoreGauge score={displayScore} />
 
         {cached && (
-          <div className="bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 rounded-full px-3 py-1 text-xs">
-            Cached result. We scanned this repo less than an hour ago.
+          <div className="flex items-center gap-2">
+            <div className="bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 rounded-full px-3 py-1 text-xs">
+              Cached result. We scanned this repo less than an hour ago.
+            </div>
+            <button
+              onClick={handleRescan}
+              disabled={rescanning}
+              className="text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-200 inline-flex items-center gap-1 text-xs font-medium transition-colors"
+            >
+              {rescanning ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <RefreshCw className="h-3 w-3" />
+              )}
+              Rescan
+            </button>
           </div>
         )}
 

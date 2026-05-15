@@ -10,6 +10,7 @@ const scanBody = z.object({
     "Must be a GitHub repository URL",
   ),
   githubToken: z.string().optional(),
+  force: z.boolean().optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -24,14 +25,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { repoUrl, githubToken } = parsed.data
+    const { repoUrl, githubToken, force } = parsed.data
 
-    const existing = await prisma.scan.findFirst({
-      where: { repoUrl, createdAt: { gte: new Date(Date.now() - 3600000) } },
-      orderBy: { createdAt: "desc" },
-    })
-    if (existing) {
-      return NextResponse.json({ id: existing.id, cached: true })
+    if (!force) {
+      const existing = await prisma.scan.findFirst({
+        where: { repoUrl, createdAt: { gte: new Date(Date.now() - 3600000) } },
+        orderBy: { createdAt: "desc" },
+      })
+      if (existing) {
+        return NextResponse.json({ id: existing.id, cached: true })
+      }
     }
 
     const effectiveToken = githubToken || process.env.GITHUB_TOKEN
