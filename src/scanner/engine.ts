@@ -14,6 +14,8 @@ import { rule as hasErrorHandling } from "./rules/has-error-handling"
 import { rule as hasMonitoring } from "./rules/has-monitoring"
 import { rule as hasStrictTs } from "./rules/has-strict-ts"
 import { rule as hasCors } from "./rules/has-cors"
+import { rule as hasGitignore } from "./rules/has-gitignore"
+import { rule as hasSecretsLeak } from "./rules/has-secrets-leak"
 
 const rules: ScanRule[] = [
   hasEnvExample,
@@ -30,6 +32,8 @@ const rules: ScanRule[] = [
   hasMonitoring,
   hasStrictTs,
   hasCors,
+  hasGitignore,
+  hasSecretsLeak,
 ]
 
 function isRuleApplicable(rule: ScanRule, archetype: Archetype): boolean {
@@ -68,6 +72,8 @@ export async function runScanner(ctx: ScanContext): Promise<ScanResult> {
   checkBadge("has-monitoring", "Monitoring Set Up")
   checkBadge("has-error-boundaries", "Error Boundaries Set")
   checkBadge("has-env-example", "Has .env.example")
+  checkBadge("has-gitignore", "Has .gitignore")
+  checkBadge("has-secrets-leak", "No Secrets Leaked")
 
   const negativeBadges = findings
     .map((f) => f.badge)

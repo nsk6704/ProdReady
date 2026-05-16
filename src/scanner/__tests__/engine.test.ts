@@ -19,11 +19,13 @@ describe("runScanner", () => {
       files: [
         ".env.example", "README.md", "Dockerfile",
         ".github/workflows/ci.yml", "src/app/error.tsx",
-        "app/error.tsx",
+        "app/error.tsx", ".gitignore", "tsconfig.json",
       ],
       fileContents: new Map([
         ["README.md", "# Project\n\nFull documentation with setup instructions here."],
         [".env.example", "PORT=3000"],
+        [".gitignore", "node_modules\n.env\n.next\ndist\nbuild\ncoverage\n.vercel\n.cache"],
+        ["tsconfig.json", JSON.stringify({ compilerOptions: { strict: true } })],
       ]),
       packageJson: {
         dependencies: {
@@ -51,7 +53,7 @@ describe("runScanner", () => {
 
   it("floors score at 0 with enough failures", async () => {
     const ctx = makeCtx({
-      files: ["src/api.ts"],
+      files: ["src/api.ts", "tsconfig.json"],
       fileContents: new Map([
         ["src/api.ts", "const data = await fetch('https://api.example.com')"],
         ["tsconfig.json", JSON.stringify({ compilerOptions: {} })],
@@ -68,11 +70,12 @@ describe("runScanner", () => {
     const ctx = makeCtx({
       files: [
         "Dockerfile", "README.md", ".github/workflows/ci.yml",
-        ".env.example", "src/app/error.tsx",
+        ".env.example", "src/app/error.tsx", ".gitignore",
       ],
       fileContents: new Map([
         ["README.md", "# Project\n\nFull documentation with setup instructions here."],
         [".env.example", "PORT=3000"],
+        [".gitignore", "node_modules\n.env\n.next\ndist\nbuild\ncoverage\n.vercel\n.cache"],
       ]),
       packageJson: {
         dependencies: {
@@ -89,6 +92,7 @@ describe("runScanner", () => {
     expect(result.badges).toContain("Has .env.example")
     expect(result.badges).toContain("Tests Found")
     expect(result.badges).toContain("Validation Found")
+    expect(result.badges).toContain("Has .gitignore")
   })
 
   it("includes negative badges from findings", async () => {
@@ -99,7 +103,7 @@ describe("runScanner", () => {
     const positive = new Set([
       "Docker Ready", "CI/CD Active", "Has README", "Has .env.example",
       "Tests Found", "Validation Found", "Monitoring Set Up",
-      "Error Boundaries Set",
+      "Error Boundaries Set", "Has .gitignore", "No Secrets Leaked",
     ])
     const negative = result.badges.filter((b) => !positive.has(b))
     expect(negative.length).toBeGreaterThan(0)
@@ -123,7 +127,7 @@ describe("runScanner", () => {
 
   it("runs archetype-agnostic rules for any archetype", async () => {
     const ctx = makeCtx({
-      files: ["src/api.ts"],
+      files: ["src/api.ts", "tsconfig.json"],
       fileContents: new Map([
         ["src/api.ts", "const data = await fetch('https://api.example.com')"],
         ["tsconfig.json", JSON.stringify({ compilerOptions: {} })],
@@ -140,6 +144,7 @@ describe("runScanner", () => {
     expect(ruleIds).toContain("has-strict-ts")
     expect(ruleIds).toContain("has-tests")
     expect(ruleIds).toContain("has-validation")
+    expect(ruleIds).toContain("has-gitignore")
   })
 
   it("returns stack in result", async () => {
