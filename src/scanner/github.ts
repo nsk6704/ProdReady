@@ -122,28 +122,27 @@ export async function fetchRepoInfo(
 
   const files = await fetchFileList(owner, name, branch, token)
 
-  const priorityFiles = [
+  const priorityFilenames = [
     "package.json",
-    ".env.example",
+    ".env.example", ".env.sample",
     "Dockerfile",
-    "docker-compose.yml",
+    "docker-compose.yml", "docker-compose.yaml",
     "README.md",
     "tsconfig.json",
-    ".eslintrc.js",
-    ".eslintrc.json",
-    ".eslintrc",
+    ".eslintrc.js", ".eslintrc.json", ".eslintrc",
     ".prettierrc",
-    "next.config.js",
-    "next.config.mjs",
-    "next.config.ts",
-    "vite.config.ts",
-    "vite.config.js",
+    "next.config.js", "next.config.mjs", "next.config.ts",
+    "vite.config.ts", "vite.config.js",
   ]
 
-  const existingPriority = files.filter((f) => priorityFiles.includes(f))
-  for (const file of existingPriority) {
-    const content = await fetchFileContent(owner, name, file, branch, token)
-    if (content) fileContents.set(file, content)
+  const seen = new Set<string>()
+  for (const file of files) {
+    const basename = file.split("/").pop()
+    if (basename && priorityFilenames.includes(basename) && !seen.has(basename)) {
+      seen.add(basename)
+      const content = await fetchFileContent(owner, name, file, branch, token)
+      if (content) fileContents.set(file, content)
+    }
   }
 
   return {
