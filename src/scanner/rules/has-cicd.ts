@@ -8,8 +8,9 @@ export const rule: ScanRule = {
       (f) =>
         f.startsWith(".github/workflows/") ||
         f.startsWith(".circleci/") ||
-        f === ".gitlab-ci.yml" ||
-        f === "Jenkinsfile",
+        f.endsWith(".gitlab-ci.yml") ||
+        f === "Jenkinsfile" ||
+        f.endsWith("/Jenkinsfile"),
     )
     if (hasCI) return null
 

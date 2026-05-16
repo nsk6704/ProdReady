@@ -27,9 +27,14 @@ function ctx(overrides?: Partial<ScanContext>): ScanContext {
 
 // ─── has-env-example ────────────────────────────────────────────
 describe("has-env-example", () => {
-  it("passes when .env.example exists", async () => {
+  it("passes when .env.example exists at root", async () => {
     const { rule } = await import("../has-env-example")
     expect(await rule.check(ctx({ files: [".env.example"] }))).toBeNull()
+  })
+
+  it("passes when .env.example is nested", async () => {
+    const { rule } = await import("../has-env-example")
+    expect(await rule.check(ctx({ files: ["config/.env.example"] }))).toBeNull()
   })
 
   it("passes when .env.sample exists", async () => {
@@ -50,9 +55,19 @@ describe("has-env-example", () => {
 
 // ─── has-dockerfile ──────────────────────────────────────────────
 describe("has-dockerfile", () => {
-  it("passes when Dockerfile exists", async () => {
+  it("passes when Dockerfile exists at root", async () => {
     const { rule } = await import("../has-dockerfile")
     expect(await rule.check(ctx({ files: ["Dockerfile"] }))).toBeNull()
+  })
+
+  it("passes when Dockerfile is nested", async () => {
+    const { rule } = await import("../has-dockerfile")
+    expect(await rule.check(ctx({ files: ["docker/Dockerfile"] }))).toBeNull()
+  })
+
+  it("passes when Dockerfile.prod exists", async () => {
+    const { rule } = await import("../has-dockerfile")
+    expect(await rule.check(ctx({ files: ["Dockerfile.prod"] }))).toBeNull()
   })
 
   it("passes when docker-compose.yml exists", async () => {
@@ -83,14 +98,24 @@ describe("has-cicd", () => {
     expect(await rule.check(ctx({ files: [".circleci/config.yml"] }))).toBeNull()
   })
 
-  it("passes with GitLab CI", async () => {
+  it("passes with GitLab CI at root", async () => {
     const { rule } = await import("../has-cicd")
     expect(await rule.check(ctx({ files: [".gitlab-ci.yml"] }))).toBeNull()
   })
 
-  it("passes with Jenkinsfile", async () => {
+  it("passes with nested GitLab CI", async () => {
+    const { rule } = await import("../has-cicd")
+    expect(await rule.check(ctx({ files: ["ci/.gitlab-ci.yml"] }))).toBeNull()
+  })
+
+  it("passes with Jenkinsfile at root", async () => {
     const { rule } = await import("../has-cicd")
     expect(await rule.check(ctx({ files: ["Jenkinsfile"] }))).toBeNull()
+  })
+
+  it("passes with nested Jenkinsfile", async () => {
+    const { rule } = await import("../has-cicd")
+    expect(await rule.check(ctx({ files: ["jenkins/Jenkinsfile"] }))).toBeNull()
   })
 
   it("fails without CI config", async () => {
@@ -104,9 +129,18 @@ describe("has-cicd", () => {
 
 // ─── has-readme ──────────────────────────────────────────────────
 describe("has-readme", () => {
-  it("passes with README.md >= 50 chars", async () => {
+  it("passes with README.md >= 50 chars at root", async () => {
     const { rule } = await import("../has-readme")
     const c = ctx({ files: ["README.md"], fileContents: new Map([["README.md", "A".repeat(50)]]) })
+    expect(await rule.check(c)).toBeNull()
+  })
+
+  it("passes with nested README.md", async () => {
+    const { rule } = await import("../has-readme")
+    const c = ctx({
+      files: ["docs/README.md"],
+      fileContents: new Map([["docs/README.md", "A".repeat(50)]]),
+    })
     expect(await rule.check(c)).toBeNull()
   })
 
@@ -410,7 +444,16 @@ describe("has-strict-ts", () => {
   it("passes when tsconfig has strict: true", async () => {
     const { rule } = await import("../has-strict-ts")
     expect(await rule.check(ctx({
+      files: ["tsconfig.json"],
       fileContents: new Map([["tsconfig.json", JSON.stringify({ compilerOptions: { strict: true } })]]),
+    }))).toBeNull()
+  })
+
+  it("passes with nested tsconfig.json", async () => {
+    const { rule } = await import("../has-strict-ts")
+    expect(await rule.check(ctx({
+      files: ["packages/app/tsconfig.json"],
+      fileContents: new Map([["packages/app/tsconfig.json", JSON.stringify({ compilerOptions: { strict: true } })]]),
     }))).toBeNull()
   })
 
@@ -422,6 +465,7 @@ describe("has-strict-ts", () => {
   it("fails without strict and no noImplicitAny", async () => {
     const { rule } = await import("../has-strict-ts")
     const r = await rule.check(ctx({
+      files: ["tsconfig.json"],
       fileContents: new Map([["tsconfig.json", JSON.stringify({ compilerOptions: {} })]]),
     }))
     expect(r).not.toBeNull()
@@ -491,5 +535,105 @@ describe("has-monitoring", () => {
   it("is gated to web-app, api-server, and fullstack archetypes", async () => {
     const { rule } = await import("../has-monitoring")
     expect(rule.archetypes).toEqual(["web-app", "api-server", "fullstack"])
+  })
+})
+
+// ─── has-gitignore ───────────────────────────────────────────────
+describe("has-gitignore", () => {
+  it("passes with complete .gitignore", async () => {
+    const { rule } = await import("../has-gitignore")
+    const c = ctx({
+      files: [".gitignore"],
+      fileContents: new Map([[
+        ".gitignore",
+        "node_modules\n.env\n.next\ndist\nbuild\ncoverage\n.vercel\n.cache",
+      ]]),
+    })
+    expect(await rule.check(c)).toBeNull()
+  })
+
+  it("fails without .gitignore", async () => {
+    const { rule } = await import("../has-gitignore")
+    const r = await rule.check(ctx())
+    expect(r).not.toBeNull()
+    expect(r!.ruleId).toBe("has-gitignore")
+    expect(r!.badge).toBe("Missing .gitignore")
+  })
+
+  it("flags incomplete .gitignore (missing 3+ patterns)", async () => {
+    const { rule } = await import("../has-gitignore")
+    const c = ctx({
+      files: [".gitignore"],
+      fileContents: new Map([[".gitignore", "node_modules\n.env"]]),
+    })
+    const r = await rule.check(c)
+    expect(r).not.toBeNull()
+    expect(r!.ruleId).toBe("has-gitignore")
+    expect(r!.badge).toBe("Incomplete .gitignore")
+  })
+
+  it("passes with nested .gitignore", async () => {
+    const { rule } = await import("../has-gitignore")
+    const c = ctx({
+      files: [".gitignore"],
+      fileContents: new Map([[".gitignore", "node_modules\n.env\n.next\ndist\nbuild\ncoverage\n.vercel\n.cache"]]),
+    })
+    expect(await rule.check(c)).toBeNull()
+  })
+})
+
+// ─── has-secrets-leak ───────────────────────────────────────────
+describe("has-secrets-leak", () => {
+  it("passes when no secrets found", async () => {
+    const { rule } = await import("../has-secrets-leak")
+    const c = ctx({
+      files: ["src/index.ts"],
+      fileContents: new Map([["src/index.ts", "const x = 1"]]),
+    })
+    expect(await rule.check(c)).toBeNull()
+  })
+
+  it("fails when private key is detected", async () => {
+    const { rule } = await import("../has-secrets-leak")
+    const c = ctx({
+      files: ["src/config.ts"],
+      fileContents: new Map([["src/config.ts", "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA"]]),
+    })
+    const r = await rule.check(c)
+    expect(r).not.toBeNull()
+    expect(r!.ruleId).toBe("has-secrets-leak")
+    expect(r!.severity).toBe("critical")
+    expect(r!.scoreImpact).toBe(-15)
+  })
+
+  it("fails when AWS secret key is detected", async () => {
+    const { rule } = await import("../has-secrets-leak")
+    const c = ctx({
+      files: ["src/aws.ts"],
+      fileContents: new Map([["src/aws.ts", "AWS_SECRET_ACCESS_KEY = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'"]]),
+    })
+    const r = await rule.check(c)
+    expect(r).not.toBeNull()
+    expect(r!.ruleId).toBe("has-secrets-leak")
+  })
+
+  it("fails when GitHub token is detected", async () => {
+    const { rule } = await import("../has-secrets-leak")
+    const c = ctx({
+      files: ["src/deploy.ts"],
+      fileContents: new Map([["src/deploy.ts", "ghp_abcdefghijklmnopqrstuvwxyz0123456789abcd"]]),
+    })
+    const r = await rule.check(c)
+    expect(r).not.toBeNull()
+    expect(r!.ruleId).toBe("has-secrets-leak")
+  })
+
+  it("skips .env.example files", async () => {
+    const { rule } = await import("../has-secrets-leak")
+    const c = ctx({
+      files: [".env.example"],
+      fileContents: new Map([[".env.example", "AWS_SECRET_ACCESS_KEY=your-key-here"]]),
+    })
+    expect(await rule.check(c)).toBeNull()
   })
 })

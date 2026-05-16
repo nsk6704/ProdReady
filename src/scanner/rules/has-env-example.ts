@@ -5,7 +5,7 @@ export const rule: ScanRule = {
   category: "nice-to-have",
   check: async (ctx) => {
     const hasEnvExample = ctx.files.some(
-      (f) => f === ".env.example" || f === ".env.sample",
+      (f) => f.endsWith(".env.example") || f.endsWith(".env.sample"),
     )
     if (hasEnvExample) return null
 

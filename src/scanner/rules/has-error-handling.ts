@@ -11,10 +11,8 @@ export const rule: ScanRule = {
     if (hasNext) {
       const hasGlobalError = ctx.files.some(
         (f) =>
-          f === "src/app/error.tsx" ||
-          f === "app/error.tsx" ||
-          f === "src/app/global-error.tsx" ||
-          f === "app/global-error.tsx",
+          f.endsWith("/error.tsx") ||
+          f.endsWith("/global-error.tsx"),
       )
       if (hasGlobalError) return null
     }

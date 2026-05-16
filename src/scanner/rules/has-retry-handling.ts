@@ -6,7 +6,7 @@ export const rule: ScanRule = {
   check: async (ctx) => {
     const sourceFiles = ctx.files.filter(
       (f) =>
-        !f.startsWith("node_modules/") &&
+        !f.includes("node_modules") &&
         /\.(ts|tsx|js|jsx)$/.test(f) &&
         !f.includes(".test.") &&
         !f.includes(".spec.") &&

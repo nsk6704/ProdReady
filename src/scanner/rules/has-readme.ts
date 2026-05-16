@@ -4,7 +4,7 @@ export const rule: ScanRule = {
   id: "has-readme",
   category: "recommended",
   check: async (ctx) => {
-    const readme = ctx.files.find((f) => /^readme\.md$/i.test(f))
+    const readme = ctx.files.find((f) => /readme\.md$/i.test(f))
     if (!readme) {
       return {
         ruleId: "has-readme",

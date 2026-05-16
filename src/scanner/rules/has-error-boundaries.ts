@@ -39,10 +39,8 @@ export const rule: ScanRule = {
 
     const hasErrorFile = ctx.files.some(
       (f) =>
-        f === "src/app/error.tsx" ||
-        f === "app/error.tsx" ||
-        f === "src/app/global-error.tsx" ||
-        f === "app/global-error.tsx",
+        f.endsWith("/error.tsx") ||
+        f.endsWith("/global-error.tsx"),
     )
 
     if (hasErrorFile) return null

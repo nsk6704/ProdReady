@@ -4,7 +4,9 @@ export const rule: ScanRule = {
   id: "has-strict-ts",
   category: "recommended",
   check: async (ctx) => {
-    const tsconfig = ctx.fileContents.get("tsconfig.json")
+    const tsconfigPath = ctx.files.find((f) => f.endsWith("tsconfig.json"))
+    if (!tsconfigPath) return null
+    const tsconfig = ctx.fileContents.get(tsconfigPath)
     if (!tsconfig) return null
 
     const hasStrict = /"strict"\s*:\s*true/.test(tsconfig)

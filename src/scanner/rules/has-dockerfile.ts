@@ -4,9 +4,13 @@ export const rule: ScanRule = {
   id: "has-dockerfile",
   category: "recommended",
   check: async (ctx) => {
-    const hasDockerfile = ctx.files.some(
-      (f) => f === "Dockerfile" || f === "docker-compose.yml" || f === "docker-compose.yaml",
-    )
+    const hasDockerfile = ctx.files.some((f) => {
+      const basename = f.split("/").pop()
+      return basename === "Dockerfile" ||
+        basename === "docker-compose.yml" ||
+        basename === "docker-compose.yaml" ||
+        /^Dockerfile\.\w+$/.test(basename ?? "")
+    })
     if (hasDockerfile) return null
 
     return {
