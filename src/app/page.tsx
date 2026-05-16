@@ -1,5 +1,6 @@
 import ScanForm from "@/components/scan-form"
 import ThemeToggle from "@/components/theme-toggle"
+import { FiGithub } from "react-icons/fi"
 
 const stagger = [0, 100, 200, 300, 450, 550]
 
@@ -61,8 +62,30 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="text-muted-foreground flex items-center justify-center border-t px-6 py-4 text-sm">
-        Made for indie hackers who ship.
+      <footer className="text-muted-foreground flex items-center justify-center gap-6 border-t px-6 py-4 text-sm">
+        <span>Made for indie hackers who ship</span>
+        <span className="text-muted-foreground/50">|</span>
+        <a
+          href="https://github.com/nsk6704/ProdReady"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
+        >
+          <FiGithub className="h-4 w-4" />
+          nsk6704/ProdReady
+        </a>
+        <span className="text-muted-foreground/50">|</span>
+        <span>
+          Made by{" "}
+          <a
+            href="https://sakethkashyap.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-amber-500 hover:text-amber-400 transition-colors"
+          >
+            Saketh
+          </a>
+        </span>
       </footer>
     </div>
   )
