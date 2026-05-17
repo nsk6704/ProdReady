@@ -13,7 +13,7 @@ const negativePatterns = [
 ]
 
 function isPositive(badge: string) {
-  return !negativePatterns.some((p) => badge.startsWith(p))
+  return !negativePatterns.some((p) => badge.includes(p))
 }
 
 export default function BadgeList({ badges }: BadgeListProps) {
@@ -30,7 +30,7 @@ export default function BadgeList({ badges }: BadgeListProps) {
             className={`flex items-center gap-1 animate-pop-in ${
               positive
                 ? "bg-green-100 text-green-800 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400"
-                : "text-muted-foreground"
+                : "bg-red-100 text-red-800 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400"
             }`}
             style={{ animationDelay: `${i * 50}ms` }}
           >

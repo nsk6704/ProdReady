@@ -14,8 +14,8 @@ import { buttonVariants } from "@/components/ui/button"
 import ThemeToggle from "@/components/theme-toggle"
 import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, GitBranch, Calendar, Check, X, Minus, ArrowUp, RefreshCw, Loader2, HelpCircle } from "lucide-react"
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
+import { ArrowLeft, GitBranch, Calendar, Check, X, ArrowUp, RefreshCw, Loader2, HelpCircle } from "lucide-react"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import type { Archetype } from "@/scanner/types"
 
 interface CheckItem {
@@ -27,20 +27,22 @@ interface CheckItem {
 }
 
 const CHECKS: CheckItem[] = [
-  { id: "has-env-example", label: ".env.example file", howItWorks: "Looks for .env.example or .env.sample in the repo. Does not verify the file has actual content." },
-  { id: "has-readme", label: "README with documentation", howItWorks: "Checks that a README.md exists with at least 50 characters of content." },
-  { id: "has-cicd", label: "CI/CD pipeline", howItWorks: "Looks for CI config files: GitHub Actions, CircleCI, GitLab CI, or Jenkins." },
-  { id: "has-tests", label: "Test setup", howItWorks: "Checks for a test framework in dependencies or test files (.test., .spec., __tests__/)." },
-  { id: "has-validation", label: "Input validation", howItWorks: "Checks for a validation library (zod, joi, etc.) in package.json dependencies." },
-  { id: "has-strict-ts", label: "Strict type checking", languages: ["typescript"], howItWorks: "Only runs for TypeScript projects. Checks if tsconfig.json has strict: true." },
-  { id: "has-retry-handling", label: "HTTP retry & timeout handling", howItWorks: "Scans source files for HTTP calls and checks if they have retry or timeout logic. Only checks up to 20 files." },
-  { id: "has-dockerfile", label: "Dockerfile", howItWorks: "Looks for Dockerfile, docker-compose.yml, or docker-compose.yaml in the repo." },
-  { id: "has-error-handling", archetypes: ["api-server", "fullstack"], label: "Global error handler", howItWorks: "Checks for Express error middleware or Next.js error.tsx. Only runs for api-server and fullstack projects." },
-  { id: "has-error-boundaries", archetypes: ["web-app", "fullstack"], label: "React error boundaries", howItWorks: "Only runs for React projects. Looks for ErrorBoundary components or error.tsx files." },
-  { id: "has-rate-limiting", archetypes: ["api-server", "fullstack"], label: "Rate limiting", howItWorks: "Checks for rate limiting packages in dependencies or files with rate-limit-related names. Does not detect in-code rate limiting logic." },
-  { id: "has-logging", archetypes: ["api-server", "fullstack"], label: "Structured logging", howItWorks: "Checks for a structured logging library (pino, winston, etc.) in your stack." },
-  { id: "has-cors", archetypes: ["api-server", "fullstack"], label: "CORS configuration", howItWorks: "Only runs for Express projects. Checks if cors package is in dependencies or imported in source files." },
-  { id: "has-monitoring", archetypes: ["web-app", "api-server", "fullstack"], label: "Monitoring & observability", howItWorks: "Checks for monitoring tools (Sentry, Datadog, OpenTelemetry, etc.) in your stack." },
+  { id: "has-env-example", label: ".env.example file", howItWorks: "Environment variables like API keys and secrets should never be committed. A .env.example tells contributors what they need to set up locally." },
+  { id: "has-readme", label: "README documentation", howItWorks: "A README is the first thing people see. It should explain what your project does, how to run it, and how to contribute." },
+  { id: "has-cicd", label: "CI/CD pipeline", howItWorks: "Automated builds and tests catch issues before they reach production. CI/CD runs your checks on every push or PR." },
+  { id: "has-tests", label: "Test setup", howItWorks: "Without tests, you can't be confident changes won't break things. A test framework verifies your code works as expected." },
+  { id: "has-validation", label: "Input validation", howItWorks: "User input should never be trusted blindly. Validation ensures data is safe and correctly formatted." },
+  { id: "has-strict-ts", label: "Strict TypeScript", languages: ["typescript"], howItWorks: "TypeScript's strict mode catches null checks, implicit any, and other common pitfalls at compile time rather than runtime." },
+  { id: "has-retry-handling", label: "HTTP retry & timeout handling", howItWorks: "Network requests can fail. Retry logic and timeouts prevent transient failures from crashing your application." },
+  { id: "has-dockerfile", label: "Dockerfile", howItWorks: "A Dockerfile makes your app portable so anyone can run it without manually setting up the environment." },
+  { id: "has-secrets-leak", label: "Potential secrets leak", howItWorks: "Accidentally committing API keys or credentials is a security risk. This scans for common secret patterns in your codebase." },
+  { id: "has-gitignore", label: ".gitignore", howItWorks: "Prevents build artifacts, dependencies, and sensitive files from being accidentally tracked in version control." },
+  { id: "has-error-handling", archetypes: ["api-server", "fullstack"], label: "Global error handler", howItWorks: "Unhandled errors can crash your server or leak internal details to users. Every backend framework supports global error handling." },
+  { id: "has-error-boundaries", archetypes: ["web-app", "fullstack"], label: "Error boundaries", howItWorks: "A UI crash shouldn't take down the entire page. Most frontend frameworks support error boundaries to handle rendering failures gracefully." },
+  { id: "has-rate-limiting", archetypes: ["api-server", "fullstack"], label: "Rate limiting", howItWorks: "Without rate limiting, your API is vulnerable to abuse. It protects against excessive requests from a single client." },
+  { id: "has-logging", archetypes: ["api-server", "fullstack"], label: "Structured logging", howItWorks: "Structured logs make it possible to search, filter, and analyze application behavior in production." },
+  { id: "has-cors", archetypes: ["api-server", "fullstack"], label: "CORS configuration", howItWorks: "Controls which domains can access your API. Required when your frontend and backend are on different origins." },
+  { id: "has-monitoring", archetypes: ["web-app", "api-server", "fullstack"], label: "Monitoring & observability", howItWorks: "You can't fix what you can't see. Monitoring alerts you to errors, slow requests, and other production issues." },
 ]
 
 interface ReportViewProps {
@@ -209,60 +211,63 @@ export default function ReportView({
       <StaggerIn index={3}>
         <section className="mb-8">
           <h2 className="mb-4 text-lg font-semibold">What We Checked</h2>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {CHECKS.map((check, idx) => {
-              const isApplicable =
-                (!check.archetypes || check.archetypes.includes(stack.archetype)) &&
-                (!check.languages || check.languages.includes(stack.language))
-              const isFinding = findingMap.has(check.id)
-              const isDismissed = dismissedRules.has(check.id)
-              let Icon: typeof Check
-              let statusClass: string
-              if (!isApplicable) {
-                Icon = Minus
-                statusClass = "text-muted-foreground"
-              } else if (isDismissed) {
-                Icon = Check
-                statusClass = "text-green-500"
-              } else if (isFinding) {
-                Icon = X
-                statusClass = "text-red-500"
-              } else {
-                Icon = Check
-                statusClass = "text-green-500"
-              }
-              return (
-                <div
-                  key={check.id}
-                  className="animate-fade-in-up flex items-center gap-2 text-sm"
-                  style={{ animationDelay: `${idx * 60}ms` }}
-                >
-                  <Icon className={`h-4 w-4 ${statusClass}`} />
-                  <span className={!isApplicable ? "text-muted-foreground" : ""}>
-                    {check.label}
-                  </span>
-                  <Tooltip>
-                    <TooltipTrigger>
-                      <HelpCircle className="text-muted-foreground h-3 w-3 cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{check.howItWorks}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  {isDismissed && (
-                    <span className="ml-auto text-xs text-green-600">
-                      Dismissed
-                    </span>
-                  )}
-                  {!isApplicable && !isDismissed && (
-                    <span className="text-muted-foreground ml-auto text-xs">
-                      N/A
-                    </span>
-                  )}
-                </div>
-              )
-            })}
-          </div>
+          {CHECKS.filter(
+              (check) =>
+                (!check.archetypes ||
+                  check.archetypes.includes(stack.archetype)) &&
+                (!check.languages ||
+                  check.languages.includes(stack.language)),
+            ).length === 0 ? (
+              <p className="text-muted-foreground text-sm">
+                No common checks match your project type.
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                {CHECKS.filter(
+                  (check) =>
+                    (!check.archetypes ||
+                      check.archetypes.includes(stack.archetype)) &&
+                    (!check.languages ||
+                      check.languages.includes(stack.language)),
+                ).map((check, idx) => {
+                  const isFinding = findingMap.has(check.id)
+                  const isDismissed = dismissedRules.has(check.id)
+                  const Icon = isDismissed || !isFinding ? Check : X
+                  const statusClass =
+                    isDismissed || !isFinding
+                      ? "text-green-500"
+                      : "text-red-500"
+
+                  return (
+                    <div
+                      key={check.id}
+                      className="animate-fade-in-up flex items-center gap-2 text-sm"
+                      style={{ animationDelay: `${idx * 60}ms` }}
+                    >
+                      <Icon className={`h-4 w-4 ${statusClass}`} />
+                      <span>{check.label}</span>
+                      <Popover>
+                        <PopoverTrigger
+                          aria-label="Learn more"
+                          openOnHover
+                          className="text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                        >
+                          <HelpCircle className="h-3.5 w-3.5" />
+                        </PopoverTrigger>
+                        <PopoverContent side="top" align="center">
+                          <p>{check.howItWorks}</p>
+                        </PopoverContent>
+                      </Popover>
+                      {isDismissed && (
+                        <span className="ml-auto text-xs text-green-600">
+                          Dismissed
+                        </span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
         </section>
       </StaggerIn>
 
