@@ -1,6 +1,6 @@
 import ScanForm from "@/components/scan-form"
 import ThemeToggle from "@/components/theme-toggle"
-import { FiGithub } from "react-icons/fi"
+import { FaGithub } from "react-icons/fa"
 
 const stagger = [0, 100, 200, 300, 450, 550]
 
@@ -11,7 +11,18 @@ export default function Home() {
         <div className="flex items-center gap-2">
           <span className="text-amber-500 text-xl font-bold">ProdReady</span>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <a
+            href="https://github.com/nsk6704/ProdReady"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 rounded-lg bg-accent/30 px-2 py-1.5 text-sm text-foreground transition-colors hover:bg-amber-500/10 hover:text-amber-500"
+          >
+            <FaGithub className="h-5 w-5" />
+            <span className="hidden sm:inline">GitHub</span>
+          </a>
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="flex flex-1 flex-col items-center justify-center px-4 py-20">
@@ -62,26 +73,16 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="text-muted-foreground flex items-center justify-center gap-6 border-t px-6 py-4 text-sm">
-        <span>Made for indie hackers who ship</span>
-        <span className="text-muted-foreground/50">|</span>
-        <a
-          href="https://github.com/nsk6704/ProdReady"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
-        >
-          <FiGithub className="h-4 w-4" />
-          nsk6704/ProdReady
-        </a>
-        <span className="text-muted-foreground/50">|</span>
-        <span>
+      <footer className="text-muted-foreground border-t px-4 py-4 text-center text-xs sm:flex sm:items-center sm:justify-center sm:gap-2 sm:px-6 sm:text-sm">
+        Made for indie hackers who ship
+        <span className="mx-1.5 hidden text-muted-foreground/30 sm:inline">·</span>
+        <span className="block sm:inline">
           Made by{" "}
           <a
             href="https://sakethkashyap.dev"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium text-amber-500 hover:text-amber-400 transition-colors"
+            className="font-medium text-amber-500 transition-colors hover:text-amber-400"
           >
             Saketh
           </a>
