@@ -148,6 +148,7 @@ const apiServerFrameworks = new Set([
 export function detectArchetype(
   framework: string | null,
   pkg: Record<string, unknown> | null,
+  files: string[] = [],
 ): Archetype {
   const isWebApp = framework !== null && webAppFrameworks.has(framework)
   const isApiServer = framework !== null && apiServerFrameworks.has(framework)
@@ -155,6 +156,17 @@ export function detectArchetype(
   if (isWebApp && isApiServer) return "fullstack"
   if (isWebApp && !isApiServer) return "web-app"
   if (isApiServer && !isWebApp) return "api-server"
+
+  const langPatterns = [
+    /compiler/i, /interpreter/i, /parser/i, /lexer/i, /tokenizer/i,
+    /ast/i, /codegen/i, /code-gen/i, /grammar/i, /bison/i, /yacc/i,
+    /antlr/i, /peg/i, /\bpl\.toml\b/i, /\bcompiler\.ts\b/i,
+    /\binterpreter\.ts\b/i, /\bparser\.ts\b/i, /\blexer\.ts\b/i,
+  ]
+  const isProgrammingLanguage = files.some((f) =>
+    langPatterns.some((p) => p.test(f)),
+  )
+  if (isProgrammingLanguage) return "programming-language"
 
   const pkgJson = pkg as Record<string, unknown> | undefined
   if (pkgJson?.bin) return "cli-tool"
@@ -192,6 +204,6 @@ export function detectStack(ctx: ScanContext): Stack {
 
   return {
     ...stackBase,
-    archetype: detectArchetype(stackBase.framework, pkg),
+    archetype: detectArchetype(stackBase.framework, pkg, ctx.files),
   }
 }

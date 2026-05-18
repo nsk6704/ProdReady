@@ -54,6 +54,7 @@ export type Archetype =
   | "fullstack"
   | "library"
   | "cli-tool"
+  | "programming-language"
 
 export interface ScanRule {
   id: string
