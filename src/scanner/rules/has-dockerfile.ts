@@ -23,6 +23,7 @@ export const rule: ScanRule = {
         "A Dockerfile makes your app portable and deployable anywhere. But if you're using a PaaS or your project is tiny, it might not matter.",
       badge: "Missing Dockerfile",
       dismissOptions: [
+        { id: "not-needed", label: "My project doesn't need it", scoreImpact: 0, description: "Some projects (CLI tools, libraries, language implementations) don't need Docker." },
         { id: "paas", label: "Using a PaaS (Vercel / Railway / Fly)", scoreImpact: -1, description: "Fair enough, the platform handles deployment." },
         { id: "too-small", label: "Project too small to need it", scoreImpact: -2, description: "Valid for tiny side projects. Revisit when it grows." },
         { id: "manual", label: "Prefer manual setup", scoreImpact: -4, description: "Your call, but Docker saves time in the long run." },

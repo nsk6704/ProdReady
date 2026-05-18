@@ -20,6 +20,7 @@ export const rule: ScanRule = {
         "Create a `.env.example` file listing all required environment variables with placeholder values.",
       badge: "Missing .env.example",
       dismissOptions: [
+        { id: "not-needed", label: "My project doesn't need it", scoreImpact: 0, description: "Fair call — not every project needs environment variables." },
         { id: "secret-manager", label: "Using a secret manager (Doppler/1Password)", scoreImpact: -1, description: "External secret managers replace the need for a local file." },
         { id: "no-vars", label: "No env vars needed yet", scoreImpact: -1, description: "Add one when you introduce env-specific config." },
         { id: "readme", label: "Documented in README", scoreImpact: -2, description: "Still handy to have a standalone file, but this works." },
