@@ -3,6 +3,7 @@ import type { ScanRule } from "../types"
 export const rule: ScanRule = {
   id: "has-retry-handling",
   category: "critical",
+  archetypes: ["web-app", "api-server", "fullstack"],
   check: async (ctx) => {
     const sourceFiles = ctx.files.filter(
       (f) =>

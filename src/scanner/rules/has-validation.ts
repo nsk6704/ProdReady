@@ -3,6 +3,7 @@ import type { ScanRule } from "../types"
 export const rule: ScanRule = {
   id: "has-validation",
   category: "recommended",
+  archetypes: ["web-app", "api-server", "fullstack"],
   check: async (ctx) => {
     if (ctx.stack.validation.length > 0) return null
 
