@@ -4,6 +4,7 @@ export const rule: ScanRule = {
   id: "has-strict-ts",
   category: "recommended",
   check: async (ctx) => {
+    if (ctx.stack.language !== "typescript") return null
     const tsconfigPath = ctx.files.find((f) => f.endsWith("tsconfig.json"))
     if (!tsconfigPath) return null
     const tsconfig = ctx.fileContents.get(tsconfigPath)
