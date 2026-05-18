@@ -105,10 +105,22 @@ export default function ReportView({
   }
 
   const handleDismiss = useCallback(
-    (_optionId: string, recovery: number, ruleId: string) => {
+    (optionId: string, recovery: number, ruleId: string) => {
       setScoreRecovery((prev) => prev + recovery)
       setDismissedRules((prev) => new Set(prev).add(ruleId))
       setCelebration(recovery)
+    },
+    [],
+  )
+
+  const handleUndoDismiss = useCallback(
+    (ruleId: string, recovery: number) => {
+      setScoreRecovery((prev) => Math.max(0, prev - recovery))
+      setDismissedRules((prev) => {
+        const next = new Set(prev)
+        next.delete(ruleId)
+        return next
+      })
     },
     [],
   )
@@ -283,7 +295,7 @@ export default function ReportView({
               <div className="flex flex-col gap-3">
                 {critical.map((f, i) => (
                   <StaggerIn key={f.ruleId} index={i + 1}>
-                    <IssueCard finding={f} onDismiss={handleDismiss} />
+                    <IssueCard finding={f} onDismiss={handleDismiss} onUndoDismiss={handleUndoDismiss} />
                   </StaggerIn>
                 ))}
               </div>
@@ -300,7 +312,7 @@ export default function ReportView({
               <div className="flex flex-col gap-3">
                 {recommended.map((f, i) => (
                   <StaggerIn key={f.ruleId} index={i + 1}>
-                    <IssueCard finding={f} onDismiss={handleDismiss} />
+                    <IssueCard finding={f} onDismiss={handleDismiss} onUndoDismiss={handleUndoDismiss} />
                   </StaggerIn>
                 ))}
               </div>
@@ -317,7 +329,7 @@ export default function ReportView({
               <div className="flex flex-col gap-3">
                 {niceToHave.map((f, i) => (
                   <StaggerIn key={f.ruleId} index={i + 1}>
-                    <IssueCard finding={f} onDismiss={handleDismiss} />
+                    <IssueCard finding={f} onDismiss={handleDismiss} onUndoDismiss={handleUndoDismiss} />
                   </StaggerIn>
                 ))}
               </div>

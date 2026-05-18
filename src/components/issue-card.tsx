@@ -47,9 +47,10 @@ const severityConfig = {
 interface IssueCardProps {
   finding: Finding
   onDismiss?: (optionId: string, recovery: number, ruleId: string) => void
+  onUndoDismiss?: (ruleId: string, recovery: number) => void
 }
 
-export default function IssueCard({ finding, onDismiss }: IssueCardProps) {
+export default function IssueCard({ finding, onDismiss, onUndoDismiss }: IssueCardProps) {
   const [dismissed, setDismissed] = useState<string | null>(null)
   const [dismissing, setDismissing] = useState(false)
   const config = severityConfig[finding.severity]
@@ -131,6 +132,9 @@ export default function IssueCard({ finding, onDismiss }: IssueCardProps) {
             </span>
             <button
               onClick={() => {
+                const dismissedOption = finding.dismissOptions?.find((o) => o.id === dismissed)
+                const recovery = Math.abs(finding.scoreImpact) - Math.abs(dismissedOption?.scoreImpact ?? 0)
+                onUndoDismiss?.(finding.ruleId, recovery)
                 setDismissed(null)
                 setDismissing(false)
               }}
