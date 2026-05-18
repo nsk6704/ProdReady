@@ -73,7 +73,7 @@ export async function runScanner(ctx: ScanContext): Promise<ScanResult> {
   checkBadge("has-error-boundaries", "Error Boundaries Set")
   checkBadge("has-env-example", "Has .env.example")
   checkBadge("has-gitignore", "Has .gitignore")
-  checkBadge("has-secrets-leak", "No Secrets Leaked")
+  checkBadge("has-secrets-leak", "Secrets Free")
 
   const negativeBadges = findings
     .map((f) => f.badge)
