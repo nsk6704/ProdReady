@@ -3,7 +3,6 @@ import { z } from "zod"
 import { fetchRepoInfo } from "@/scanner/github"
 import { runScanner } from "@/scanner/engine"
 import { prisma } from "@/lib/prisma"
-import { cleanupOldScans } from "@/lib/cleanup"
 
 const scanBody = z.object({
   repoUrl: z.string().url("Must be a valid URL").regex(
@@ -73,8 +72,6 @@ export async function POST(request: NextRequest) {
         badges: result.badges,
       },
     })
-
-    cleanupOldScans().catch(() => {})
 
     return NextResponse.json({ id: scan.id })
   } catch (error) {

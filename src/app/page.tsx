@@ -67,8 +67,7 @@ export default function Home() {
             className="animate-fade-in-up text-muted-foreground/60 mt-3 max-w-md text-xs leading-relaxed"
             style={{ animationDelay: `${stagger[5]}ms` }}
           >
-            Reports are stored for 24 hours so you can share the link. We
-            don&apos;t store any code, only metadata from the scan.
+            We don&apos;t store any code, only metadata from the scan.
           </div>
         </div>
       </main>
