@@ -1,6 +1,5 @@
 import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer"
 import type { Finding, Stack } from "@/scanner/types"
-import { generateFixPrompt } from "./generate-fix-prompt"
 
 const styles = StyleSheet.create({
   page: {
@@ -81,10 +80,41 @@ const styles = StyleSheet.create({
     borderTopColor: "#d1d5db",
     paddingTop: 12,
   },
-  promptText: {
+  promptTitle: {
+    fontSize: 12,
+    fontWeight: 700,
+    marginBottom: 6,
+    color: "#1a1a2e",
+  },
+  promptIntro: {
     fontSize: 9,
     color: "#374151",
+    marginBottom: 8,
     lineHeight: 1.4,
+  },
+  promptSubHeading: {
+    fontSize: 10,
+    fontWeight: 700,
+    marginTop: 8,
+    marginBottom: 4,
+    color: "#374151",
+  },
+  promptItem: {
+    fontSize: 9,
+    color: "#374151",
+    marginBottom: 2,
+    marginLeft: 8,
+    lineHeight: 1.4,
+  },
+  promptItemTitle: {
+    fontSize: 9,
+    fontWeight: 700,
+    color: "#1a1a2e",
+  },
+  promptBullet: {
+    fontSize: 9,
+    color: "#6b7280",
+    marginRight: 4,
   },
   badge: {
     fontSize: 9,
@@ -129,8 +159,6 @@ export function ReportPDF({
   badges: string[]
   createdAt: string
 }) {
-  const prompt = generateFixPrompt(owner, name, findings)
-
   const critical = findings.filter((f) => f.severity === "critical")
   const recommended = findings.filter((f) => f.severity === "recommended")
   const niceToHave = findings.filter((f) => f.severity === "nice-to-have")
@@ -251,11 +279,62 @@ export function ReportPDF({
         )}
 
         <View style={styles.promptSection}>
-          {prompt.split("\n").map((line, i) => (
-            <Text key={i} style={styles.promptText}>
-              {line || " "}
-            </Text>
-          ))}
+          <Text style={styles.promptTitle}>Fix Prompt</Text>
+          <Text style={styles.promptIntro}>
+            I scanned {owner}/{name} and found the following issues that need attention.
+            Implement the suggested fixes with minimal, focused edits. Match the existing code style.
+          </Text>
+
+          {critical.length > 0 && (
+            <>
+              <Text style={[styles.promptSubHeading, { color: severityColor("critical") }]}>
+                Critical Issues
+              </Text>
+              {critical.map((f) => (
+                <View key={f.ruleId} style={{ flexDirection: "row", marginBottom: 2 }}>
+                  <Text style={styles.promptBullet}>- </Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.promptItemTitle}>{f.title}</Text>
+                    <Text style={styles.promptItem}>{f.suggestion}</Text>
+                  </View>
+                </View>
+              ))}
+            </>
+          )}
+
+          {recommended.length > 0 && (
+            <>
+              <Text style={[styles.promptSubHeading, { color: severityColor("recommended") }]}>
+                Recommended Improvements
+              </Text>
+              {recommended.map((f) => (
+                <View key={f.ruleId} style={{ flexDirection: "row", marginBottom: 2 }}>
+                  <Text style={styles.promptBullet}>- </Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.promptItemTitle}>{f.title}</Text>
+                    <Text style={styles.promptItem}>{f.suggestion}</Text>
+                  </View>
+                </View>
+              ))}
+            </>
+          )}
+
+          {niceToHave.length > 0 && (
+            <>
+              <Text style={[styles.promptSubHeading, { color: severityColor("nice-to-have") }]}>
+                Nice-to-Have Enhancements
+              </Text>
+              {niceToHave.map((f) => (
+                <View key={f.ruleId} style={{ flexDirection: "row", marginBottom: 2 }}>
+                  <Text style={styles.promptBullet}>- </Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.promptItemTitle}>{f.title}</Text>
+                    <Text style={styles.promptItem}>{f.suggestion}</Text>
+                  </View>
+                </View>
+              ))}
+            </>
+          )}
         </View>
       </Page>
     </Document>
