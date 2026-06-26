@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { generateFixPrompt } from "@/lib/generate-fix-prompt"
+import type { Finding } from "@/scanner/types"
 
 export async function GET(
   _request: NextRequest,
@@ -13,6 +15,9 @@ export async function GET(
       return NextResponse.json({ error: "Report not found" }, { status: 404 })
     }
 
+    const findings = scan.findings as unknown as Finding[]
+    const fixPrompt = generateFixPrompt(scan.owner, scan.name, findings)
+
     return NextResponse.json({
       id: scan.id,
       repoUrl: scan.repoUrl,
@@ -24,6 +29,7 @@ export async function GET(
       findings: scan.findings,
       badges: scan.badges,
       createdAt: scan.createdAt,
+      fixPrompt,
     })
   } catch (error) {
     console.error("Report fetch failed:", error)
