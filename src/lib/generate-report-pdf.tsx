@@ -96,7 +96,8 @@ const styles = StyleSheet.create({
   promptText: {
     fontSize: 8,
     color: "#374151",
-    lineHeight: 1.5,
+    lineHeight: 1.4,
+    fontFamily: "Courier",
   },
   badge: {
     fontSize: 9,
