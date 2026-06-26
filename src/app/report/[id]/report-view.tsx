@@ -14,7 +14,7 @@ import { buttonVariants } from "@/components/ui/button"
 import ThemeToggle from "@/components/theme-toggle"
 import { useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, GitBranch, Calendar, Check, X, ArrowUp, RefreshCw, Loader2, HelpCircle } from "lucide-react"
+import { ArrowLeft, GitBranch, Calendar, Check, X, ArrowUp, RefreshCw, Loader2, HelpCircle, FileDown, ChevronDown, Copy, CheckCheck } from "lucide-react"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 import type { Archetype } from "@/scanner/types"
 
@@ -56,6 +56,7 @@ interface ReportViewProps {
   badges: string[]
   createdAt: string
   cached?: boolean
+  fixPrompt: string
 }
 
 export default function ReportView({
@@ -69,6 +70,7 @@ export default function ReportView({
   badges,
   createdAt,
   cached,
+  fixPrompt,
 }: ReportViewProps) {
   const router = useRouter()
   const [rescanning, setRescanning] = useState(false)
@@ -113,6 +115,29 @@ export default function ReportView({
     [],
   )
 
+  const [downloading, setDownloading] = useState(false)
+  const [downloadOpen, setDownloadOpen] = useState(false)
+
+  const handleDownload = async (format: "md" | "pdf") => {
+    setDownloading(true)
+    setDownloadOpen(false)
+    try {
+      const res = await fetch(`/api/report/${id}/download?format=${format}`)
+      if (!res.ok) throw new Error("Download failed")
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `prodready-report-${owner}-${name}.${format}`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+    } finally {
+      setDownloading(false)
+    }
+  }
+
   const handleUndoDismiss = useCallback(
     (ruleId: string, recovery: number) => {
       setScoreRecovery((prev) => Math.max(0, prev - recovery))
@@ -138,6 +163,39 @@ export default function ReportView({
 
         <div className="flex items-center gap-2">
           <ShareButton reportId={id} />
+          <div className="relative">
+            <button
+              onClick={() => setDownloadOpen(!downloadOpen)}
+              disabled={downloading}
+              className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs font-medium transition-colors"
+            >
+              <FileDown className="h-4 w-4" />
+              {downloading ? "..." : "Download"}
+              <ChevronDown className="h-3 w-3" />
+            </button>
+            {downloadOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setDownloadOpen(false)}
+                />
+                <div className="absolute right-0 top-full z-50 mt-1 w-40 overflow-hidden rounded-md border bg-popover p-1 shadow-md">
+                  <button
+                    onClick={() => handleDownload("md")}
+                    className="hover:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-xs"
+                  >
+                    Markdown (.md)
+                  </button>
+                  <button
+                    onClick={() => handleDownload("pdf")}
+                    className="hover:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-xs"
+                  >
+                    PDF
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
           <ThemeToggle />
         </div>
       </header>
@@ -347,6 +405,13 @@ export default function ReportView({
         )}
       </div>
 
+      {findings.length > 0 && fixPrompt && (
+        <>
+          <Separator className="my-8" />
+          <FixPrompt prompt={fixPrompt} />
+        </>
+      )}
+
       <Separator className="my-8" />
 
       <div className="flex justify-center">
@@ -358,5 +423,39 @@ export default function ReportView({
         </Link>
       </div>
     </div>
+  )
+}
+
+function FixPrompt({ prompt }: { prompt: string }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(prompt)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <section>
+      <h2 className="mb-3 text-lg font-semibold">Fix Prompt</h2>
+      <p className="text-muted-foreground mb-3 text-xs">
+        Copy this prompt and paste it into Cursor, Claude, or any coding assistant to automatically fix the issues.
+      </p>
+      <div className="relative">
+        <div className="border-input bg-background w-full rounded-lg border p-3 pr-12 text-xs leading-relaxed">
+          <pre className="whitespace-pre-wrap break-words font-sans">{prompt}</pre>
+        </div>
+        <button
+          onClick={handleCopy}
+          className="absolute right-2 top-2 rounded-md p-1.5 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+        >
+          {copied ? (
+            <CheckCheck className="h-4 w-4 text-green-500" />
+          ) : (
+            <Copy className="text-muted-foreground h-4 w-4" />
+          )}
+        </button>
+      </div>
+    </section>
   )
 }

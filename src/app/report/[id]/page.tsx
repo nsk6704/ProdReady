@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { prisma } from "@/lib/prisma"
 import type { Finding, Stack } from "@/scanner/types"
+import { generateFixPrompt } from "@/lib/generate-fix-prompt"
 import ReportView from "./report-view"
 
 export async function generateMetadata({
@@ -42,6 +43,7 @@ export default async function ReportPage({
 
   const findings = scan.findings as unknown as Finding[]
   const stack = scan.stack as unknown as Stack
+  const fixPrompt = generateFixPrompt(scan.owner, scan.name, findings)
 
   return (
     <ReportView
@@ -55,6 +57,7 @@ export default async function ReportPage({
       badges={scan.badges}
       createdAt={scan.createdAt.toISOString()}
       cached={cached === "1"}
+      fixPrompt={fixPrompt}
     />
   )
 }

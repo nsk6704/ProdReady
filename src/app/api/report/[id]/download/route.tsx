@@ -1,0 +1,187 @@
+import { NextRequest, NextResponse } from "next/server"
+import { renderToStream } from "@react-pdf/renderer"
+import { prisma } from "@/lib/prisma"
+import type { Finding, Stack } from "@/scanner/types"
+import { generateFixPrompt } from "@/lib/generate-fix-prompt"
+import { ReportPDF } from "@/lib/generate-report-pdf"
+
+export const runtime = "nodejs"
+
+function generateMarkdown(scan: {
+  owner: string
+  name: string
+  repoUrl: string
+  score: number
+  stack: Stack
+  findings: Finding[]
+  badges: string[]
+  createdAt: Date
+  fixPrompt: string
+}) {
+  const lines: string[] = []
+
+  lines.push(`# ProdReady Report: ${scan.owner}/${scan.name}`)
+  lines.push("")
+  lines.push(`**Score:** ${scan.score}/100`)
+  lines.push(`**Repo:** ${scan.repoUrl}`)
+  lines.push(`**Date:** ${scan.createdAt.toISOString().split("T")[0]}`)
+  lines.push("")
+  lines.push("---")
+  lines.push("")
+
+  lines.push("## Stack")
+  lines.push("")
+  lines.push(`- **Archetype:** ${scan.stack.archetype}`)
+  lines.push(`- **Framework:** ${scan.stack.framework ?? "N/A"}`)
+  lines.push(`- **Language:** ${scan.stack.language}`)
+  lines.push(`- **Bundler:** ${scan.stack.bundler ?? "N/A"}`)
+  if (scan.stack.database.length) lines.push(`- **Database:** ${scan.stack.database.join(", ")}`)
+  if (scan.stack.testing.length) lines.push(`- **Testing:** ${scan.stack.testing.join(", ")}`)
+  if (scan.stack.styling.length) lines.push(`- **Styling:** ${scan.stack.styling.join(", ")}`)
+  lines.push("")
+
+  if (scan.badges.length > 0) {
+    lines.push("## Badges")
+    lines.push("")
+    scan.badges.forEach((b) => lines.push(`- 🏅 ${b}`))
+    lines.push("")
+  }
+
+  if (scan.findings.length === 0) {
+    lines.push("## Findings")
+    lines.push("")
+    lines.push("No issues found. Your project looks production-ready!")
+    lines.push("")
+    return lines.join("\n")
+  }
+
+  const critical = scan.findings.filter((f) => f.severity === "critical")
+  const recommended = scan.findings.filter((f) => f.severity === "recommended")
+  const niceToHave = scan.findings.filter((f) => f.severity === "nice-to-have")
+
+  if (critical.length > 0) {
+    lines.push("## Critical Issues")
+    lines.push("")
+    critical.forEach((f) => {
+      lines.push(`### ❌ ${f.title}`)
+      lines.push("")
+      lines.push(f.description)
+      lines.push("")
+      lines.push(`> **Suggestion:** ${f.suggestion}`)
+      lines.push("")
+    })
+  }
+
+  if (recommended.length > 0) {
+    lines.push("## Recommended Improvements")
+    lines.push("")
+    recommended.forEach((f) => {
+      lines.push(`### ⚠️ ${f.title}`)
+      lines.push("")
+      lines.push(f.description)
+      lines.push("")
+      lines.push(`> **Suggestion:** ${f.suggestion}`)
+      lines.push("")
+    })
+  }
+
+  if (niceToHave.length > 0) {
+    lines.push("## Nice-to-Have Enhancements")
+    lines.push("")
+    niceToHave.forEach((f) => {
+      lines.push(`### 💡 ${f.title}`)
+      lines.push("")
+      lines.push(f.description)
+      lines.push("")
+      lines.push(`> **Suggestion:** ${f.suggestion}`)
+      lines.push("")
+    })
+  }
+
+  lines.push("---")
+  lines.push("")
+  lines.push(scan.fixPrompt)
+
+  return lines.join("\n")
+}
+
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const { id } = await params
+    const format = request.nextUrl.searchParams.get("format") || "md"
+
+    const scan = await prisma.scan.findUnique({ where: { id } })
+    if (!scan) {
+      return NextResponse.json({ error: "Report not found" }, { status: 404 })
+    }
+
+    const findings = scan.findings as unknown as Finding[]
+    const stack = scan.stack as unknown as Stack
+    const fixPrompt = generateFixPrompt(scan.owner, scan.name, findings)
+
+    if (format === "md") {
+      const markdown = generateMarkdown({
+        owner: scan.owner,
+        name: scan.name,
+        repoUrl: scan.repoUrl,
+        score: scan.score,
+        stack,
+        findings,
+        badges: scan.badges,
+        createdAt: scan.createdAt,
+        fixPrompt,
+      })
+
+      return new NextResponse(markdown, {
+        headers: {
+          "Content-Type": "text/markdown; charset=utf-8",
+          "Content-Disposition": `attachment; filename="prodready-report-${scan.owner}-${scan.name}.md"`,
+        },
+      })
+    }
+
+    if (format === "pdf") {
+      const stream = await renderToStream(
+        <ReportPDF
+          owner={scan.owner}
+          name={scan.name}
+          repoUrl={scan.repoUrl}
+          score={scan.score}
+          stack={stack}
+          findings={findings}
+          badges={scan.badges}
+          createdAt={scan.createdAt.toISOString()}
+          fixPrompt={fixPrompt}
+        />,
+      )
+
+      const chunks: Buffer[] = []
+      for await (const chunk of stream) {
+        chunks.push(Buffer.from(chunk))
+      }
+      const pdfBuffer = Buffer.concat(chunks)
+
+      return new NextResponse(pdfBuffer, {
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `attachment; filename="prodready-report-${scan.owner}-${scan.name}.pdf"`,
+        },
+      })
+    }
+
+    return NextResponse.json(
+      { error: 'Unsupported format. Use "md" or "pdf".' },
+      { status: 400 },
+    )
+  } catch (error) {
+    console.error("Download failed:", error)
+    return NextResponse.json(
+      { error: "Failed to generate download" },
+      { status: 500 },
+    )
+  }
+}
