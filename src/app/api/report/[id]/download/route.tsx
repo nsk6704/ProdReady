@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
+import { renderToStream } from "@react-pdf/renderer"
 import { prisma } from "@/lib/prisma"
 import type { Finding, Stack } from "@/scanner/types"
-import { generateReportHtml } from "./report-html"
+import { ReportPDF } from "@/lib/generate-report-pdf"
 
 export const runtime = "nodejs"
 
@@ -140,32 +141,26 @@ export async function GET(
     }
 
     if (format === "pdf") {
-      const html = generateReportHtml({
-        owner: scan.owner,
-        name: scan.name,
-        repoUrl: scan.repoUrl,
-        score: scan.score,
-        stack,
-        findings,
-        badges: scan.badges,
-        createdAt: scan.createdAt,
-      })
+      const stream = await renderToStream(
+        <ReportPDF
+          owner={scan.owner}
+          name={scan.name}
+          repoUrl={scan.repoUrl}
+          score={scan.score}
+          stack={stack}
+          findings={findings}
+          badges={scan.badges}
+          createdAt={scan.createdAt.toISOString()}
+        />,
+      )
 
-      const puppeteer = await import("puppeteer")
-      const browser = await puppeteer.launch({ headless: true })
-      const page = await browser.newPage()
-      await page.setContent(html)
-      const pdfBuffer = await page.pdf({
-        format: "A4",
-        printBackground: true,
-        margin: { top: "40px", bottom: "60px", left: "48px", right: "48px" },
-        displayHeaderFooter: true,
-        footerTemplate: `<div style="width:100%;text-align:center;font-size:8px;color:#9ca3af;font-family:Helvetica,Arial,sans-serif;padding:0 48px;"><span style="float:left;">ProdReady Report</span><span style="float:right;">Page <span class="pageNumber"></span> of <span class="totalPages"></span></span></div>`,
-        headerTemplate: "<div></div>",
-      })
-      await browser.close()
+      const chunks: Buffer[] = []
+      for await (const chunk of stream) {
+        chunks.push(Buffer.from(chunk))
+      }
+      const pdfBuffer = Buffer.concat(chunks)
 
-      return new NextResponse(Buffer.from(pdfBuffer), {
+      return new NextResponse(pdfBuffer, {
         headers: {
           "Content-Type": "application/pdf",
           "Content-Disposition": `attachment; filename="prodready-report-${scan.owner}-${scan.name}.pdf"`,
