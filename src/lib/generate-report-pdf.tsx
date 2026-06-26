@@ -1,6 +1,5 @@
 import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer"
 import type { Finding, Stack } from "@/scanner/types"
-import { generateFixPrompt } from "./generate-fix-prompt"
 
 const styles = StyleSheet.create({
   page: {
@@ -81,10 +80,17 @@ const styles = StyleSheet.create({
     borderTopColor: "#d1d5db",
     paddingTop: 12,
   },
+  promptTitle: {
+    fontSize: 12,
+    fontWeight: 700,
+    marginBottom: 6,
+    color: "#1a1a2e",
+  },
   promptText: {
     fontSize: 9,
     color: "#374151",
     lineHeight: 1.4,
+    marginBottom: 2,
   },
   badge: {
     fontSize: 9,
@@ -119,6 +125,7 @@ export function ReportPDF({
   findings,
   badges,
   createdAt,
+  fixPrompt,
 }: {
   owner: string
   name: string
@@ -128,9 +135,8 @@ export function ReportPDF({
   findings: Finding[]
   badges: string[]
   createdAt: string
+  fixPrompt: string
 }) {
-  const prompt = generateFixPrompt(owner, name, findings)
-
   const critical = findings.filter((f) => f.severity === "critical")
   const recommended = findings.filter((f) => f.severity === "recommended")
   const niceToHave = findings.filter((f) => f.severity === "nice-to-have")
@@ -251,7 +257,8 @@ export function ReportPDF({
         )}
 
         <View style={styles.promptSection}>
-          {prompt.split("\n").map((line, i) => (
+          <Text style={styles.promptTitle}>Fix Prompt</Text>
+          {fixPrompt.split("\n").map((line, i) => (
             <Text key={i} style={styles.promptText}>
               {line || " "}
             </Text>
