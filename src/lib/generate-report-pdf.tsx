@@ -86,11 +86,18 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     color: "#1a1a2e",
   },
+  promptBox: {
+    backgroundColor: "#f9fafb",
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 4,
+    padding: 10,
+  },
   promptText: {
-    fontSize: 9,
+    fontSize: 8,
     color: "#374151",
     lineHeight: 1.4,
-    marginBottom: 2,
+    fontFamily: "Courier",
   },
   badge: {
     fontSize: 9,
@@ -258,11 +265,16 @@ export function ReportPDF({
 
         <View style={styles.promptSection}>
           <Text style={styles.promptTitle}>Fix Prompt</Text>
-          {fixPrompt.split("\n").map((line, i) => (
-            <Text key={i} style={styles.promptText}>
-              {line || " "}
-            </Text>
-          ))}
+          <Text style={{ fontSize: 8, color: "#6b7280", marginBottom: 6 }}>
+            Copy this prompt into Cursor, Claude, or any coding assistant to auto-fix the issues.
+          </Text>
+          <View style={styles.promptBox}>
+            {fixPrompt.split("\n").map((line, i) => (
+              <Text key={i} style={styles.promptText}>
+                {line || " "}
+              </Text>
+            ))}
+          </View>
         </View>
       </Page>
     </Document>

@@ -442,7 +442,7 @@ function FixPrompt({ prompt }: { prompt: string }) {
         Copy this prompt and paste it into Cursor, Claude, or any coding assistant to automatically fix the issues.
       </p>
       <div className="relative">
-        <div className="border-input bg-background max-h-80 w-full overflow-hidden rounded-lg border p-3 pr-12 text-xs leading-relaxed">
+        <div className="border-input bg-background w-full rounded-lg border p-3 pr-12 text-xs leading-relaxed">
           <pre className="whitespace-pre-wrap break-words font-sans">{prompt}</pre>
         </div>
         <button
