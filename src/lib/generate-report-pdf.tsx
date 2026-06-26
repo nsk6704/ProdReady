@@ -1,29 +1,11 @@
-import { Document, Page, View, Text, StyleSheet, Font } from "@react-pdf/renderer"
+import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer"
 import type { Finding, Stack } from "@/scanner/types"
 import { generateFixPrompt } from "./generate-fix-prompt"
-
-Font.register({
-  family: "Inter",
-  fonts: [
-    {
-      src: "https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKDuKmMI.woff2",
-      fontWeight: 400,
-    },
-    {
-      src: "https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKDuKmMI.woff2",
-      fontWeight: 600,
-    },
-    {
-      src: "https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKDuKmMI.woff2",
-      fontWeight: 700,
-    },
-  ],
-})
 
 const styles = StyleSheet.create({
   page: {
     padding: 40,
-    fontFamily: "Inter",
+    fontFamily: "Helvetica",
     fontSize: 10,
     lineHeight: 1.5,
     color: "#1a1a2e",
