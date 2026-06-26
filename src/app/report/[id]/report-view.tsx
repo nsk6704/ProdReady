@@ -56,6 +56,7 @@ interface ReportViewProps {
   badges: string[]
   createdAt: string
   cached?: boolean
+  fixPrompt: string
 }
 
 export default function ReportView({
@@ -69,6 +70,7 @@ export default function ReportView({
   badges,
   createdAt,
   cached,
+  fixPrompt,
 }: ReportViewProps) {
   const router = useRouter()
   const [rescanning, setRescanning] = useState(false)
@@ -403,10 +405,10 @@ export default function ReportView({
         )}
       </div>
 
-      {findings.length > 0 && (
+      {findings.length > 0 && fixPrompt && (
         <>
           <Separator className="my-8" />
-          <FixPrompt owner={owner} name={name} findings={findings} />
+          <FixPrompt prompt={fixPrompt} />
         </>
       )}
 
@@ -424,37 +426,8 @@ export default function ReportView({
   )
 }
 
-function FixPrompt({ owner, name, findings }: { owner: string; name: string; findings: Finding[] }) {
+function FixPrompt({ prompt }: { prompt: string }) {
   const [copied, setCopied] = useState(false)
-
-  const critical = findings.filter((f) => f.severity === "critical")
-  const recommended = findings.filter((f) => f.severity === "recommended")
-  const niceToHave = findings.filter((f) => f.severity === "nice-to-have")
-
-  let prompt = `Analyze the repository ${owner}/${name} and fix the following production readiness issues. Follow the existing code style and conventions used throughout the project. Only implement the fixes listed below — do not refactor or change anything beyond what's required to resolve these specific issues.\n\n`
-
-  if (critical.length > 0) {
-    prompt += `## Critical Issues\n\n`
-    critical.forEach((f) => {
-      prompt += `### ${f.title}\nTo fix: ${f.suggestion}\n\n`
-    })
-  }
-
-  if (recommended.length > 0) {
-    prompt += `## Recommended Improvements\n\n`
-    recommended.forEach((f) => {
-      prompt += `### ${f.title}\nTo fix: ${f.suggestion}\n\n`
-    })
-  }
-
-  if (niceToHave.length > 0) {
-    prompt += `## Nice-to-Have Enhancements\n\n`
-    niceToHave.forEach((f) => {
-      prompt += `### ${f.title}\nTo fix: ${f.suggestion}\n\n`
-    })
-  }
-
-  prompt += `Remember: match the existing code style, only touch the files needed to fix these issues, and do not introduce unrelated changes.`
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(prompt)
